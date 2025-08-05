@@ -1,0 +1,19 @@
+import { awscdk } from 'projen';
+const project = new awscdk.AwsCdkConstructLibrary({
+  author: 'Bimnet',
+  authorAddress: 'bimnett@gmail.com',
+  authorEmail: 'bimnett@gmail.com',
+  authorName: 'Bimnet Tesfamariam',
+  cdkVersion: '2.1.0',
+  defaultReleaseBranch: 'main',
+  jsiiVersion: '~5.8.0',
+  name: 'cdk-s3-vectors',
+  projenrcTs: true,
+  repositoryUrl: 'https://github.com/bimnett/cdk-s3-vectors.git',
+
+  // deps: [],                /* Runtime dependencies of this module. */
+  // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
+  // devDeps: [],             /* Build dependencies for this module. */
+  // packageName: undefined,  /* The "name" in package.json. */
+});
+project.synth();
