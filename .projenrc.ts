@@ -11,6 +11,30 @@ const project = new awscdk.AwsCdkConstructLibrary({
   projenrcTs: true,
   repositoryUrl: 'https://github.com/bimnett/cdk-s3-vectors.git',
 
+  // Python
+  publishToPypi: {
+    distName: 'cdk-s3-vectors',
+    module: 'cdk_s3_vectors',
+  },
+
+  // Java (Maven)
+  publishToMaven: {
+    javaPackage: 'com.bimnett.cdks3vectors',
+    mavenGroupId: 'com.bimnett',
+    mavenArtifactId: 'cdk-s3-vectors',
+  },
+
+  // C# (.NET / NuGet)
+  publishToNuget: {
+    dotNetNamespace: 'Bimnett.CdkS3Vectors',
+    packageId: 'Bimnett.CdkS3Vectors',
+  },
+
+  // Go
+  publishToGo: {
+    moduleName: 'github.com/bimnett/cdk-s3-vectors',
+  },
+
   // deps: [],                /* Runtime dependencies of this module. */
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
   // devDeps: [],             /* Build dependencies for this module. */
