@@ -91,6 +91,7 @@ Any object.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#cdk-s3-vectors.Bucket.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#cdk-s3-vectors.Bucket.property.bucketArn">bucketArn</a></code> | <code>string</code> | The ARN of the created S3 bucket. |
 | <code><a href="#cdk-s3-vectors.Bucket.property.bucketName">bucketName</a></code> | <code>string</code> | The bucket where the vector data will be stored. |
 | <code><a href="#cdk-s3-vectors.Bucket.property.region">region</a></code> | <code>string</code> | The AWS region where the resource will be created. |
 
@@ -105,6 +106,18 @@ public readonly node: Node;
 - *Type:* constructs.Node
 
 The tree node.
+
+---
+
+##### `bucketArn`<sup>Required</sup> <a name="bucketArn" id="cdk-s3-vectors.Bucket.property.bucketArn"></a>
+
+```typescript
+public readonly bucketArn: string;
+```
+
+- *Type:* string
+
+The ARN of the created S3 bucket.
 
 ---
 
@@ -241,6 +254,7 @@ Any object.
 | <code><a href="#cdk-s3-vectors.Index.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 | <code><a href="#cdk-s3-vectors.Index.property.indexArn">indexArn</a></code> | <code>string</code> | The ARN (Amazon Resource Name) of the created S3 Vector index. |
 | <code><a href="#cdk-s3-vectors.Index.property.indexEndpoint">indexEndpoint</a></code> | <code>string</code> | The HTTPS endpoint for the S3 Vector index, used for making API calls. |
+| <code><a href="#cdk-s3-vectors.Index.property.indexName">indexName</a></code> | <code>string</code> | The name for the index. |
 
 ---
 
@@ -277,6 +291,149 @@ public readonly indexEndpoint: string;
 - *Type:* string
 
 The HTTPS endpoint for the S3 Vector index, used for making API calls.
+
+---
+
+##### `indexName`<sup>Required</sup> <a name="indexName" id="cdk-s3-vectors.Index.property.indexName"></a>
+
+```typescript
+public readonly indexName: string;
+```
+
+- *Type:* string
+
+The name for the index.
+
+---
+
+
+### S3VectorKnowledgeBase <a name="S3VectorKnowledgeBase" id="cdk-s3-vectors.S3VectorKnowledgeBase"></a>
+
+#### Initializers <a name="Initializers" id="cdk-s3-vectors.S3VectorKnowledgeBase.Initializer"></a>
+
+```typescript
+import { S3VectorKnowledgeBase } from 'cdk-s3-vectors'
+
+new S3VectorKnowledgeBase(scope: Construct, id: string, props: S3VectorKnowledgeBaseProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBase.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | - Represents the scope for all resources. |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBase.Initializer.parameter.id">id</a></code> | <code>string</code> | - Scope-unique id. |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBase.Initializer.parameter.props">props</a></code> | <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBaseProps">S3VectorKnowledgeBaseProps</a></code> | - User provided props for the construct. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="cdk-s3-vectors.S3VectorKnowledgeBase.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+Represents the scope for all resources.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="cdk-s3-vectors.S3VectorKnowledgeBase.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+Scope-unique id.
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="cdk-s3-vectors.S3VectorKnowledgeBase.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#cdk-s3-vectors.S3VectorKnowledgeBaseProps">S3VectorKnowledgeBaseProps</a>
+
+User provided props for the construct.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBase.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="cdk-s3-vectors.S3VectorKnowledgeBase.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBase.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### ~~`isConstruct`~~ <a name="isConstruct" id="cdk-s3-vectors.S3VectorKnowledgeBase.isConstruct"></a>
+
+```typescript
+import { S3VectorKnowledgeBase } from 'cdk-s3-vectors'
+
+S3VectorKnowledgeBase.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="cdk-s3-vectors.S3VectorKnowledgeBase.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBase.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBase.property.knowledgeBaseArn">knowledgeBaseArn</a></code> | <code>string</code> | The Amazon Resource Name (ARN) of the knowledge base. |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBase.property.knowledgeBaseId">knowledgeBaseId</a></code> | <code>string</code> | The ID of the knowledge base. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="cdk-s3-vectors.S3VectorKnowledgeBase.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `knowledgeBaseArn`<sup>Required</sup> <a name="knowledgeBaseArn" id="cdk-s3-vectors.S3VectorKnowledgeBase.property.knowledgeBaseArn"></a>
+
+```typescript
+public readonly knowledgeBaseArn: string;
+```
+
+- *Type:* string
+
+The Amazon Resource Name (ARN) of the knowledge base.
+
+---
+
+##### `knowledgeBaseId`<sup>Required</sup> <a name="knowledgeBaseId" id="cdk-s3-vectors.S3VectorKnowledgeBase.property.knowledgeBaseId"></a>
+
+```typescript
+public readonly knowledgeBaseId: string;
+```
+
+- *Type:* string
+
+The ID of the knowledge base.
 
 ---
 
@@ -506,6 +663,88 @@ public readonly nonFilterableMetadataKeys: string[];
 - *Type:* string[]
 
 A list of keys for metadata fields that should not be filterable.
+
+---
+
+### S3VectorKnowledgeBaseProps <a name="S3VectorKnowledgeBaseProps" id="cdk-s3-vectors.S3VectorKnowledgeBaseProps"></a>
+
+#### Initializer <a name="Initializer" id="cdk-s3-vectors.S3VectorKnowledgeBaseProps.Initializer"></a>
+
+```typescript
+import { S3VectorKnowledgeBaseProps } from 'cdk-s3-vectors'
+
+const s3VectorKnowledgeBaseProps: S3VectorKnowledgeBaseProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBaseProps.property.bucketProps">bucketProps</a></code> | <code><a href="#cdk-s3-vectors.BucketProps">BucketProps</a></code> | User provided props for the S3 vectors bucket construct. |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBaseProps.property.embeddingModelArn">embeddingModelArn</a></code> | <code>string</code> | The Amazon Resource Name (ARN) of the model used to create vector embeddings for the knowledge base. |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBaseProps.property.indexProps">indexProps</a></code> | <code><a href="#cdk-s3-vectors.IndexProps">IndexProps</a></code> | User provided props for the S3 vectors index construct. |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBaseProps.property.knowledgeBaseName">knowledgeBaseName</a></code> | <code>string</code> | The name of the knowledge base. |
+| <code><a href="#cdk-s3-vectors.S3VectorKnowledgeBaseProps.property.description">description</a></code> | <code>string</code> | A description of the knowledge base. |
+
+---
+
+##### `bucketProps`<sup>Required</sup> <a name="bucketProps" id="cdk-s3-vectors.S3VectorKnowledgeBaseProps.property.bucketProps"></a>
+
+```typescript
+public readonly bucketProps: BucketProps;
+```
+
+- *Type:* <a href="#cdk-s3-vectors.BucketProps">BucketProps</a>
+
+User provided props for the S3 vectors bucket construct.
+
+---
+
+##### `embeddingModelArn`<sup>Required</sup> <a name="embeddingModelArn" id="cdk-s3-vectors.S3VectorKnowledgeBaseProps.property.embeddingModelArn"></a>
+
+```typescript
+public readonly embeddingModelArn: string;
+```
+
+- *Type:* string
+
+The Amazon Resource Name (ARN) of the model used to create vector embeddings for the knowledge base.
+
+---
+
+##### `indexProps`<sup>Required</sup> <a name="indexProps" id="cdk-s3-vectors.S3VectorKnowledgeBaseProps.property.indexProps"></a>
+
+```typescript
+public readonly indexProps: IndexProps;
+```
+
+- *Type:* <a href="#cdk-s3-vectors.IndexProps">IndexProps</a>
+
+User provided props for the S3 vectors index construct.
+
+---
+
+##### `knowledgeBaseName`<sup>Required</sup> <a name="knowledgeBaseName" id="cdk-s3-vectors.S3VectorKnowledgeBaseProps.property.knowledgeBaseName"></a>
+
+```typescript
+public readonly knowledgeBaseName: string;
+```
+
+- *Type:* string
+
+The name of the knowledge base.
+
+---
+
+##### `description`<sup>Optional</sup> <a name="description" id="cdk-s3-vectors.S3VectorKnowledgeBaseProps.property.description"></a>
+
+```typescript
+public readonly description: string;
+```
+
+- *Type:* string
+
+A description of the knowledge base.
 
 ---
 
