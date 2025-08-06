@@ -1,5 +1,2 @@
-export class Hello {
-  public sayHello() {
-    return 'hello, world!';
-  }
-}
+export * from './s3-vectors/bucket';
+export * from './s3-vectors/index';

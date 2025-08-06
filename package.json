@@ -1,9 +1,9 @@
 {
   "name": "cdk-s3-vectors",
   "repository": {
+    "type": "git",
     "url": "https://github.com/bimnett/cdk-s3-vectors.git"
   },
-  "description": "",
   "scripts": {
     "build": "npx projen build",
     "bump": "npx projen bump",
@@ -34,7 +34,8 @@
   },
   "author": {
     "name": "Bimnet Tesfamariam",
-    "email": "bimnett@gmail.com"
+    "email": "bimnett@gmail.com",
+    "organization": false
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^2",
