@@ -1,7 +1,7 @@
 import { App, Stack } from 'aws-cdk-lib';
 import { Template, Match } from 'aws-cdk-lib/assertions';
 import { Role, ServicePrincipal, IGrantable } from 'aws-cdk-lib/aws-iam';
-import { Bucket, Index } from '../src/s3-vectors';
+import { Bucket, Index } from '../src';
 
 // A helper construct to test the grantWrite method
 class TestGrantee extends Stack implements IGrantable {
