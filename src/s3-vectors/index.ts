@@ -2,13 +2,17 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { IGrantable } from 'aws-cdk-lib/aws-iam';
 import * as custom_resources from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
-import { Bucket } from './bucket';
 
 export interface IndexProps {
   /**
-    * The S3 Vector Bucket construct where the index will be created.
+    * The name of the S3 Vector bucket where the index will be created.
     */
-  readonly bucket: Bucket;
+  readonly bucketName: string;
+
+  /**
+    * The AWS region where the bucket and index are located.
+    */
+  readonly region: string;
 
   /**
     * The name of the vector index.
@@ -74,7 +78,7 @@ export class Index extends Construct {
     }
 
     const createParams: { [key: string]: any } = {
-      vectorBucketName: props.bucket.bucketName,
+      vectorBucketName: props.bucketName,
       indexName: props.indexName,
       dataType: props.dataType,
       dimension: props.dimension,
@@ -109,17 +113,17 @@ export class Index extends Construct {
       action: 'createIndex',
       parameters: createParams,
       physicalResourceId: physicalResourceId,
-      region: props.bucket.region,
+      region: props.region,
     };
 
     const onDelete: custom_resources.AwsSdkCall = {
       service: 'S3Vectors',
       action: 'deleteIndex',
       parameters: {
-        vectorBucketName: props.bucket.bucketName,
+        vectorBucketName: props.bucketName,
         indexName: props.indexName,
       },
-      region: props.bucket.region,
+      region: props.region,
     };
 
     const customResource = new custom_resources.AwsCustomResource(this, 'S3VectorIndexCustomResource', {
@@ -133,8 +137,6 @@ export class Index extends Construct {
     this.indexName = props.indexName;
     this.indexArn = customResource.getResponseField('IndexArn').toString();
     this.indexEndpoint = customResource.getResponseField('IndexEndpoint').toString();
-    // Ensure the index is created only after the bucket has been created.
-    customResource.node.addDependency(props.bucket);
   }
 
   /**
@@ -151,5 +153,3 @@ export class Index extends Construct {
     }));
   }
 }
-
-export { Bucket };

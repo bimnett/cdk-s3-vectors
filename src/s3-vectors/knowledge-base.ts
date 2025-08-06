@@ -59,7 +59,8 @@ export class S3VectorKnowledgeBase extends Construct {
 
     const vectorIndex = new Index(this, 'S3VectorIndex', {
       ...props.indexProps,
-      bucket: vectorBucket,
+      bucketName: vectorBucket.bucketName,
+      region: vectorBucket.region,
     });
 
     const knowledgeBaseRole = new iam.Role(this, 'KnowledgeBaseRole', {
