@@ -55,6 +55,11 @@ export class Index extends Construct {
   public readonly indexEndpoint: string;
 
   /**
+   * The name for the index.
+   */
+  public readonly indexName: string;
+
+  /**
     * @summary Creates a new Index construct for S3 Vectors.
     * @param {cdk.App} scope - Represents the scope for all resources.
     * @param {string} id - Scope-unique id.
@@ -125,6 +130,7 @@ export class Index extends Construct {
       }),
     });
 
+    this.indexName = props.indexName;
     this.indexArn = customResource.getResponseField('IndexArn').toString();
     this.indexEndpoint = customResource.getResponseField('IndexEndpoint').toString();
     // Ensure the index is created only after the bucket has been created.
