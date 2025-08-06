@@ -43,6 +43,11 @@ export class Bucket extends Construct {
   public readonly region: string;
 
   /**
+   * The ARN of the created S3 bucket.
+   */
+  public readonly bucketArn: string;
+
+  /**
     * @summary Creates a new Bucket construct for S3 Vectors.
     * @param {cdk.App} scope - Represents the scope for all resources.
     * @param {string} id - Scope-unique id.
@@ -86,12 +91,14 @@ export class Bucket extends Construct {
       region: props.region,
     };
 
-    new custom_resources.AwsCustomResource(this, 'S3VectorStoreCustomResource', {
+    const customResource = new custom_resources.AwsCustomResource(this, 'S3VectorStoreCustomResource', {
       onCreate: onCreate,
       onDelete: onDelete,
       policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({
         resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE,
       }),
     });
+
+    this.bucketArn = customResource.getResponseField('BucketArn').toString();
   }
 }
