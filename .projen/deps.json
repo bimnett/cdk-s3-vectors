@@ -90,8 +90,12 @@
       "type": "build"
     },
     {
+      "name": "@aws-sdk/client-s3vectors",
+      "type": "bundled"
+    },
+    {
       "name": "aws-cdk-lib",
-      "version": "^2.1.0",
+      "version": "^2.205.0",
       "type": "peer"
     },
     {

@@ -4,7 +4,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   authorAddress: 'bimnett@gmail.com',
   authorEmail: 'bimnett@gmail.com',
   authorName: 'Bimnet Tesfamariam',
-  cdkVersion: '2.1.0',
+  cdkVersion: '2.205.0',
   defaultReleaseBranch: 'main',
   jsiiVersion: '~5.8.0',
   name: 'cdk-s3-vectors',
@@ -35,9 +35,16 @@ const project = new awscdk.AwsCdkConstructLibrary({
     moduleName: 'github.com/bimnett/cdk-s3-vectors',
   },
 
+  bundledDeps: ['@aws-sdk/client-s3vectors'],
+
   // deps: [],                /* Runtime dependencies of this module. */
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
   // devDeps: [],             /* Build dependencies for this module. */
   // packageName: undefined,  /* The "name" in package.json. */
 });
+
+// Copy Lambda assets to lib directory after compilation
+project.compileTask.exec('cp -r src/lambda lib/');
+project.compileTask.exec('cd lib/lambda && npm install');
+
 project.synth();
