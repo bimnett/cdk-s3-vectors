@@ -1,0 +1,7 @@
+{
+  "name": "s3-vectors-lambda-handlers",
+  "version": "1.0.0",
+  "dependencies": {
+    "@aws-sdk/client-s3vectors": "^3.0.0"
+  }
+}
