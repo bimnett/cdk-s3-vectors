@@ -1,14 +1,33 @@
+import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import { IGrantable } from 'aws-cdk-lib/aws-iam';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as custom_resources from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
-import { Bucket, BucketProps } from './bucket';
-import { Index, IndexProps } from './index';
 
-export interface S3VectorKnowledgeBaseProps {
+
+export interface KnowledgeBaseProps {
   /**
-    * The name of the knowledge base.
+    * The name of the knowledge base to create.
     */
   readonly knowledgeBaseName: string;
+
+  /**
+    * Contains details about the vector embeddings configuration of the knowledge base.
+    */
+  readonly knowledgeBaseConfiguration: KnowledgeBaseConfiguration;
+
+  /**
+    * The ARN (Amazon Resource Name) of the S3 bucket where vector embeddings are stored.
+    * This bucket contains the vector data used by the knowledge base.
+    */
+  readonly vectorBucketArn: string;
+
+  /**
+    * The ARN (Amazon Resource Name) of the vector index used for the knowledge base.
+    * This ARN identifies the specific vector index resource within Amazon Bedrock.
+    */
+  readonly indexArn: string;
 
   /**
     * A description of the knowledge base.
@@ -16,22 +35,44 @@ export interface S3VectorKnowledgeBaseProps {
   readonly description?: string;
 
   /**
-    * The Amazon Resource Name (ARN) of the model used to create vector embeddings for the knowledge base.
+    * A unique, case-sensitive identifier to ensure that the API request completes no more than one time.
+    * Must have length greater than or equal to 33.
+    *
+    * If this token matches a previous request, Amazon Bedrock ignores the request, but does not return an error.
+    * For more information, see [Ensuring Idempotency](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+    */
+  readonly clientToken?: string;
+}
+
+export interface KnowledgeBaseConfiguration {
+  /**
+    * The ARN (Amazon Resource Name) of the model used to create vector embeddings for the knowledge base.
     */
   readonly embeddingModelArn: string;
 
   /**
-    * User provided props for the S3 vectors bucket construct.
+    * The data type for the vectors when using a model to convert text into vector embeddings.
+    * The model must support the specified data type for vector embeddings.
+    *
+    * Floating-point (float32) is the default data type, and is supported by most models for vector embeddings.
+    * See [Supported embeddings models](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-supported.html)
+    * for information on the available models and their vector data types.
     */
-  readonly bucketProps: BucketProps;
+  readonly embeddingDataType?: 'BINARY' | 'FLOAT32';
 
   /**
-    * User provided props for the S3 vectors index construct.
+    * The dimensions details for the vector configuration used on the Bedrock embeddings model.
     */
-  readonly indexProps: IndexProps;
+  readonly dimensions?: string;
 }
 
-export class S3VectorKnowledgeBase extends Construct {
+/**
+ * Creates a Amazon Bedrock knowledge base with S3 Vectors as the underlying vector store.
+ *
+ * To create a knowledge base, you must first set up and configure a S3 Vectors bucket and index.
+ * For more information, see [Set up a knowledge base](https://docs.aws.amazon.com/bedrock/latest/userguide/knowlege-base-prereq.html).
+ */
+export class KnowledgeBase extends Construct {
   /**
     * The ID of the knowledge base.
     */
@@ -47,86 +88,102 @@ export class S3VectorKnowledgeBase extends Construct {
     * @summary Creates a new Bedrock knowledge base construct with S3 Vectors as the vector store.
     * @param {cdk.App} scope - Represents the scope for all resources.
     * @param {string} id - Scope-unique id.
-    * @param {IndexProps} props - User provided props for the construct.
+    * @param {KnowledgeBaseProps} props - User provided props for the construct.
     * @access public
     */
 
 
-  constructor(scope: Construct, id: string, props: S3VectorKnowledgeBaseProps) {
+  constructor(scope: Construct, id: string, props: KnowledgeBaseProps) {
     super(scope, id);
+    if (props.clientToken && props.clientToken.length < 33) {
+      throw new Error('The client token must have a length greater than or equal to 33.');
+    }
 
-    const vectorBucket = new Bucket(this, 'S3VectorBucket', props.bucketProps);
+    const region = cdk.Stack.of(this).region;
+    const accountId = cdk.Stack.of(this).account;
+    const constructedKnowledgeBaseArn = `arn:aws:bedrock:${region}:${accountId}:knowledge-base/*`;
 
-    const vectorIndex = new Index(this, 'S3VectorIndex', {
-      ...props.indexProps,
-      bucketName: vectorBucket.bucketName,
-      region: vectorBucket.region,
-    });
-
-    const knowledgeBaseRole = new iam.Role(this, 'KnowledgeBaseRole', {
+    const knowledgeBaseRole = new iam.Role(this, 'BedrockKnowledgeBaseRole', {
       assumedBy: new iam.ServicePrincipal('bedrock.amazonaws.com'),
+      description: `IAM role for Bedrock Knowledge Base ${props.knowledgeBaseName}`,
     });
 
     knowledgeBaseRole.addToPolicy(new iam.PolicyStatement({
-      actions: ['s3:GetObject', 's3:ListBucket'],
-      resources: [vectorBucket.bucketArn, `${vectorBucket.bucketArn}/*`],
-    }));
-    knowledgeBaseRole.addToPolicy(new iam.PolicyStatement({
-      actions: ['s3vectors:addVectors', 's3vectors:deleteVectors'],
-      resources: [vectorIndex.indexArn],
-    }));
-    knowledgeBaseRole.addToPolicy(new iam.PolicyStatement({
-      actions: ['bedrock:InvokeModel'],
-      resources: [props.embeddingModelArn],
+      actions: ['s3vectors:*'],
+      resources: [props.indexArn, props.vectorBucketArn],
     }));
 
-    const onCreate: custom_resources.AwsSdkCall = {
-      service: 'BedrockAgent',
-      action: 'createKnowledgeBase',
-      parameters: {
-        name: props.knowledgeBaseName,
+    knowledgeBaseRole.addToPolicy(new iam.PolicyStatement({
+      actions: [
+        'kms:Decrypt',
+        'kms:GenerateDataKey',
+        'kms:DescribeKey',
+      ],
+      resources: ['*'],
+    }));
+
+    const bedrockKnowledgeBaseHandler = new lambda.Function(this, 'BedrockKBHandler', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 's3-vectors-create-kb.handler',
+      code: lambda.Code.fromAsset(__dirname + '/../lambda'),
+      timeout: cdk.Duration.minutes(5),
+    });
+
+    // Add all permissions upfront to avoid circular dependency
+    bedrockKnowledgeBaseHandler.addToRolePolicy(new iam.PolicyStatement({
+      actions: [
+        'bedrock:CreateKnowledgeBase',
+        'iam:PassRole',
+      ],
+      resources: ['*'],
+    }));
+
+    bedrockKnowledgeBaseHandler.addToRolePolicy(new iam.PolicyStatement({
+      actions: [
+        'bedrock:GetKnowledgeBase',
+        'bedrock:UpdateKnowledgeBase',
+        'bedrock:DeleteKnowledgeBase',
+      ],
+      resources: [constructedKnowledgeBaseArn],
+    }));
+
+    knowledgeBaseRole.grantAssumeRole(bedrockKnowledgeBaseHandler.grantPrincipal);
+
+    const bedrockKnowledgeBaseProvider = new custom_resources.Provider(this, 'BedrockKBProvider', {
+      onEventHandler: bedrockKnowledgeBaseHandler,
+    });
+
+    const customResource = new cdk.CustomResource(this, 'BedrockKnowledgeBaseCustomResource', {
+      serviceToken: bedrockKnowledgeBaseProvider.serviceToken,
+      properties: {
+        knowledgeBaseName: props.knowledgeBaseName,
         description: props.description,
+        clientToken: props.clientToken,
         roleArn: knowledgeBaseRole.roleArn,
+        indexArn: props.indexArn,
+        vectorBucketArn: props.vectorBucketArn,
         knowledgeBaseConfiguration: {
-          type: 'VECTOR',
-          vectorKnowledgeBaseConfiguration: {
-            embeddingModelArn: props.embeddingModelArn,
-          },
-        },
-        storageConfiguration: {
-          type: 'S3_VECTORS',
-          s3VectorsConfiguration: {
-            vectorBucketArn: vectorBucket.bucketArn,
-            indexArn: vectorIndex.indexArn,
-            indexName: vectorIndex.indexName,
-          },
+          embeddingDataType: props.knowledgeBaseConfiguration.embeddingDataType,
+          dimensions: props.knowledgeBaseConfiguration.dimensions,
+          embeddingModelArn: props.knowledgeBaseConfiguration.embeddingModelArn,
         },
       },
-      physicalResourceId: custom_resources.PhysicalResourceId.of(props.knowledgeBaseName),
-      outputPaths: [
-        'knowledgeBase.knowledgeBaseId',
-        'knowledgeBase.knowledgeBaseArn',
-      ],
-    };
-
-    const onDelete: custom_resources.AwsSdkCall = {
-      service: 'BedrockAgent',
-      action: 'deleteKnowledgeBase',
-      parameters: { knowledgeBaseId: '{{knowledgeBase.knowledgeBaseId}}' },
-    };
-
-    const knowledgeBaseResource = new custom_resources.AwsCustomResource(this, 'KnowledgeBaseCustomResource', {
-      onCreate: onCreate,
-      onDelete: onDelete,
-      policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({ resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE }),
     });
 
-    this.knowledgeBaseId = knowledgeBaseResource.getResponseField('knowledgeBase.knowledgeBaseId').toString();
-    this.knowledgeBaseArn = knowledgeBaseResource.getResponseField('knowledgeBase.knowledgeBaseArn').toString();
+    this.knowledgeBaseId = customResource.getAttString('KnowledgeBaseId');
+    this.knowledgeBaseArn = customResource.getAttString('KnowledgeBaseArn');
+  }
 
-    // Ensure the knowledge base is created after the role, bucket, and index
-    knowledgeBaseResource.node.addDependency(knowledgeBaseRole);
-    knowledgeBaseResource.node.addDependency(vectorBucket);
-    knowledgeBaseResource.node.addDependency(vectorIndex);
+  /**
+    * Grants permission to start an ingestion job for the knowledge base.
+    * @param grantee The principal to grant permissions to.
+    */
+  public grantIngestion(grantee: IGrantable): void {
+    grantee.grantPrincipal.addToPrincipalPolicy(new iam.PolicyStatement({
+      actions: [
+        'bedrock:StartIngestionJob',
+      ],
+      resources: [this.knowledgeBaseArn],
+    }));
   }
 }
