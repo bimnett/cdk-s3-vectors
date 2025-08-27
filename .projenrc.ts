@@ -1,6 +1,6 @@
 import { awscdk } from 'projen';
 const project = new awscdk.AwsCdkConstructLibrary({
-  author: 'Bimnet',
+  author: 'bimnett',
   authorAddress: 'bimnett@gmail.com',
   authorEmail: 'bimnett@gmail.com',
   authorName: 'Bimnet Tesfamariam',
