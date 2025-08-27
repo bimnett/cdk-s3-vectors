@@ -1,67 +1,75 @@
+import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { IGrantable } from 'aws-cdk-lib/aws-iam';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as custom_resources from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 
+
 export interface IndexProps {
   /**
-    * The name of the S3 Vector bucket where the index will be created.
+    * The name of the vector bucket to create the vector index in.
     */
-  readonly bucketName: string;
+  readonly vectorBucketName: string;
 
   /**
-    * The AWS region where the bucket and index are located.
-    */
-  readonly region: string;
-
-  /**
-    * The name of the vector index.
+    * The name of the vector index to create.
     */
   readonly indexName: string;
 
   /**
-    * The data type of the vectors in the index.
+    * The data type of the vectors in the index. Must be 'float32'
     */
   readonly dataType: 'float32';
 
   /**
-    * The number of dimensions for the vectors in the index.
+    * The dimensions of the vectors to be inserted into the vector index.
     */
   readonly dimension: number;
 
   /**
-    * The distance metric to use for calculating similarity.
+    * The distance metric to be used for similarity search.
     */
   readonly distanceMetric: 'euclidean' | 'cosine';
 
   /**
-    * Optional metadata configuration for the index.
+    * The metadata configuration for the vector index.
     */
   readonly metadataConfiguration?: MetadataConfiguration;
 }
 
 export interface MetadataConfiguration {
   /**
-    * A list of keys for metadata fields that should not be filterable.
+    * Non-filterable metadata keys allow you to enrich vectors with additional context during storage and retrieval.
+    * Unlike default metadata keys, these keys can't be used as query filters.
+    *
+    * Non-filterable metadata keys can be retrieved but can't be searched, queried, or filtered.
+    * You can access non-filterable metadata keys of your vectors after finding the vectors.
+    * For more information about non-filterable metadata keys, see
+    * [Vectors](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-vectors.html) and
+    * [Limitations and restrictions](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-limitations.html)
+    * in the *Amazon S3 User Guide*.
     */
   readonly nonFilterableMetadataKeys: string[];
 }
 
+/**
+ * Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.
+ *
+ * Creates a vector index within a vector bucket.
+ * To specify the vector bucket, you must use either the vector bucket name or the vector bucket ARN (Amazon Resource Name).
+ */
 export class Index extends Construct {
   /**
-    * The ARN (Amazon Resource Name) of the created S3 Vector index.
+    * The ARN (Amazon Resource Name) of the S3 Vector index.
     */
   public readonly indexArn: string;
 
   /**
-   * The HTTPS endpoint for the S3 Vector index, used for making API calls.
-   */
-  public readonly indexEndpoint: string;
-
-  /**
-   * The name for the index.
+   * The name of the index.
    */
   public readonly indexName: string;
+
 
   /**
     * @summary Creates a new Index construct for S3 Vectors.
@@ -71,72 +79,64 @@ export class Index extends Construct {
     * @access public
     */
 
+
   constructor(scope: Construct, id: string, props: IndexProps) {
     super(scope, id);
     if (props.dimension < 1 || props.dimension > 4096) {
       throw new Error('Dimension must be between 1 and 4096.');
     }
 
-    const createParams: { [key: string]: any } = {
-      vectorBucketName: props.bucketName,
-      indexName: props.indexName,
-      dataType: props.dataType,
-      dimension: props.dimension,
-      distanceMetric: props.distanceMetric,
-    };
+    const region = cdk.Stack.of(this).region;
+    const accountId = cdk.Stack.of(this).account;
+    const constructedIndexArn = `arn:aws:s3vectors:${region}:${accountId}:bucket/${props.vectorBucketName}/index/${props.indexName}`;
 
-    if (props.metadataConfiguration) {
-      createParams.metadataConfiguration = props.metadataConfiguration;
-    }
+    const s3VectorsHandler = new lambda.Function(this, 'S3VectorsHandler', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 's3-vectors-create-index.handler',
+      code: lambda.Code.fromAsset(__dirname + '/../lambda'),
+      timeout: cdk.Duration.minutes(5),
+    });
 
-    // Helper function to create a stable string representation of the metadata object
-    const getStableMetadataString = (metadata?: MetadataConfiguration) => {
-      if (!metadata || !metadata.nonFilterableMetadataKeys) {
-        return '';
-      }
-      const sortedKeys = [...metadata.nonFilterableMetadataKeys].sort();
-      return JSON.stringify({ nonFilterableMetadataKeys: sortedKeys });
-    };
+    // Add all permissions upfront to avoid circular dependency
+    s3VectorsHandler.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['s3vectors:CreateIndex'],
+      resources: [constructedIndexArn],
+    }));
 
-    const physicalResourceId = custom_resources.PhysicalResourceId.of(
-      [
-        props.indexName,
-        props.dimension,
-        props.dataType,
-        props.distanceMetric,
-        getStableMetadataString(props.metadataConfiguration),
-      ].join('-'),
-    );
+    s3VectorsHandler.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['s3vectors:DeleteIndex'],
+      resources: [constructedIndexArn],
+    }));
 
-    const onCreate: custom_resources.AwsSdkCall = {
-      service: 'S3Vectors',
-      action: 'createIndex',
-      parameters: createParams,
-      physicalResourceId: physicalResourceId,
-      region: props.region,
-    };
+    // Add KMS permissions for encrypted buckets
+    s3VectorsHandler.addToRolePolicy(new iam.PolicyStatement({
+      actions: [
+        'kms:Decrypt',
+        'kms:DescribeKey',
+        'kms:GenerateDataKey',
+      ],
+      resources: ['*'],
+    }));
 
-    const onDelete: custom_resources.AwsSdkCall = {
-      service: 'S3Vectors',
-      action: 'deleteIndex',
-      parameters: {
-        vectorBucketName: props.bucketName,
+    const s3VectorsProvider = new custom_resources.Provider(this, 'S3VectorsProvider', {
+      onEventHandler: s3VectorsHandler,
+    });
+
+    const customResource = new cdk.CustomResource(this, 'S3VectorIndexCustomResource', {
+      serviceToken: s3VectorsProvider.serviceToken,
+      properties: {
+        physicalId: `${props.vectorBucketName}-${props.indexName}`,
+        vectorBucketName: props.vectorBucketName,
         indexName: props.indexName,
+        dataType: props.dataType,
+        dimension: props.dimension,
+        distanceMetric: props.distanceMetric,
+        metadataConfiguration: props.metadataConfiguration,
       },
-      region: props.region,
-    };
-
-    const customResource = new custom_resources.AwsCustomResource(this, 'S3VectorIndexCustomResource', {
-      onCreate: onCreate,
-      onDelete: onDelete,
-      policy: custom_resources.AwsCustomResourcePolicy.fromSdkCalls({
-        resources: custom_resources.AwsCustomResourcePolicy.ANY_RESOURCE,
-      }),
     });
 
     this.indexName = props.indexName;
-    this.indexArn = customResource.getResponseField('IndexArn').toString();
-    this.indexEndpoint = customResource.getResponseField('IndexEndpoint').toString();
+    this.indexArn = customResource.getAttString('IndexArn');
   }
 
   /**
@@ -146,8 +146,8 @@ export class Index extends Construct {
   public grantWrite(grantee: IGrantable): void {
     grantee.grantPrincipal.addToPrincipalPolicy(new iam.PolicyStatement({
       actions: [
-        'S3Vectors:addVectors',
-        'S3Vectors:deleteVectors',
+        's3vectors:PutVectors',
+        's3vectors:DeleteVectors',
       ],
       resources: [this.indexArn],
     }));
