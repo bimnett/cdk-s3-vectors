@@ -62,7 +62,7 @@ export interface KnowledgeBaseConfiguration {
 
   /**
     * The dimensions details for the vector configuration used on the Bedrock embeddings model.
-    * 
+    *
     * Must be supported by the chosen embedding model.
     */
   readonly dimensions?: string;

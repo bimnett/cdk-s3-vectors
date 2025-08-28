@@ -695,6 +695,8 @@ public readonly dimensions: string;
 
 The dimensions details for the vector configuration used on the Bedrock embeddings model.
 
+Must be supported by the chosen embedding model.
+
 ---
 
 ##### `embeddingDataType`<sup>Optional</sup> <a name="embeddingDataType" id="cdk-s3-vectors.KnowledgeBaseConfiguration.property.embeddingDataType"></a>
