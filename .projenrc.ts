@@ -36,7 +36,11 @@ const project = new awscdk.AwsCdkConstructLibrary({
     moduleName: 'github.com/bimnett/cdk-s3-vectors',
   },
 
-  bundledDeps: ['@aws-sdk/client-s3vectors'],
+  bundledDeps: [
+    '@aws-sdk/client-s3vectors',
+    '@aws-sdk/client-bedrock-agent',
+    'uuid',
+  ],
 
   // deps: [],                /* Runtime dependencies of this module. */
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */

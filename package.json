@@ -65,10 +65,14 @@
     "constructs": "^10.0.5"
   },
   "dependencies": {
-    "@aws-sdk/client-s3vectors": "^3.876.0"
+    "@aws-sdk/client-bedrock-agent": "^3.876.0",
+    "@aws-sdk/client-s3vectors": "^3.876.0",
+    "uuid": "^10.0.0"
   },
   "bundledDependencies": [
-    "@aws-sdk/client-s3vectors"
+    "@aws-sdk/client-bedrock-agent",
+    "@aws-sdk/client-s3vectors",
+    "uuid"
   ],
   "keywords": [
     "cdk"
