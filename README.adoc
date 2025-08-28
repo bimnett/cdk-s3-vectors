@@ -36,118 +36,19 @@ Logo] Go |`github.com/bimnett/cdk-s3-vectors`
 
 == Overview
 
-This AWS CDK construct library provides high-level constructs for Amazon S3 Vectors, enabling you to create vector buckets, indexes, and knowledge bases for AI/ML applications. Amazon S3 Vectors is in preview release and provides native vector storage and similarity search capabilities within Amazon S3.
+Amazon S3 Vectors is in preview release and provides native vector storage and similarity search capabilities within Amazon S3.
+
+This AWS CDK construct library provides high-level constructs for Amazon S3 Vectors, enabling you to create vector buckets, indexes, and knowledge bases for AI/ML applications.
 
 The library includes three main constructs:
+
 - **Bucket**: Creates S3 vector buckets with optional encryption
 - **Index**: Creates vector indexes within buckets for similarity search
 - **KnowledgeBase**: Creates Amazon Bedrock knowledge bases using S3 Vectors as the vector store
 
-Here is a minimal deployable pattern definition:
+== Examples
 
-====
-[role="tablist"]
-Typescript::
-+
-[source,typescript]
-----
-import { Construct } from 'constructs';
-import { Stack, StackProps } from 'aws-cdk-lib';
-import { Bucket, Index, KnowledgeBase } from 'cdk-s3-vectors';
-
-// Create a vector bucket
-const vectorBucket = new Bucket(this, 'VectorBucket', {
-  vectorBucketName: 'my-vector-bucket',
-});
-
-// Create a vector index
-const vectorIndex = new Index(this, 'VectorIndex', {
-  vectorBucketName: vectorBucket.vectorBucketName,
-  indexName: 'my-index',
-  dataType: 'float32',
-  dimension: 1536,
-  distanceMetric: 'cosine',
-});
-
-// Create a knowledge base
-const knowledgeBase = new KnowledgeBase(this, 'KnowledgeBase', {
-  knowledgeBaseName: 'my-knowledge-base',
-  vectorBucketArn: vectorBucket.vectorBucketArn,
-  indexArn: vectorIndex.indexArn,
-  knowledgeBaseConfiguration: {
-    embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1',
-  },
-});
-----
-
-Python::
-+
-[source,python]
-----
-from cdk_s3_vectors import Bucket, Index, KnowledgeBase
-from aws_cdk import Stack
-from constructs import Construct
-
-# Create a vector bucket
-vector_bucket = Bucket(self, 'VectorBucket',
-    vector_bucket_name='my-vector-bucket'
-)
-
-# Create a vector index
-vector_index = Index(self, 'VectorIndex',
-    vector_bucket_name=vector_bucket.vector_bucket_name,
-    index_name='my-index',
-    data_type='float32',
-    dimension=1536,
-    distance_metric='cosine'
-)
-
-# Create a knowledge base
-knowledge_base = KnowledgeBase(self, 'KnowledgeBase',
-    knowledge_base_name='my-knowledge-base',
-    vector_bucket_arn=vector_bucket.vector_bucket_arn,
-    index_arn=vector_index.index_arn,
-    knowledge_base_configuration={
-        'embedding_model_arn': 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1'
-    }
-)
-----
-
-Java::
-+
-[source,java]
-----
-import software.constructs.Construct;
-import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.StackProps;
-import com.bimnett.cdks3vectors.*;
-
-// Create a vector bucket
-Bucket vectorBucket = new Bucket(this, "VectorBucket", BucketProps.builder()
-    .vectorBucketName("my-vector-bucket")
-    .build());
-
-// Create a vector index
-Index vectorIndex = new Index(this, "VectorIndex", IndexProps.builder()
-    .vectorBucketName(vectorBucket.getVectorBucketName())
-    .indexName("my-index")
-    .dataType("float32")
-    .dimension(1536)
-    .distanceMetric("cosine")
-    .build());
-
-// Create a knowledge base
-KnowledgeBase knowledgeBase = new KnowledgeBase(this, "KnowledgeBase", 
-    KnowledgeBaseProps.builder()
-        .knowledgeBaseName("my-knowledge-base")
-        .vectorBucketArn(vectorBucket.getVectorBucketArn())
-        .indexArn(vectorIndex.getIndexArn())
-        .knowledgeBaseConfiguration(KnowledgeBaseConfiguration.builder()
-            .embeddingModelArn("arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1")
-            .build())
-        .build());
-----
-====
+For complete, deployable examples in all supported languages, see the link:examples/[examples directory].
 
 == Bucket Construct Props
 
