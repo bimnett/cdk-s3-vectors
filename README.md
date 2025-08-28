@@ -102,57 +102,7 @@ Out of the box implementation of the constructs without any override will set th
 
 ## Architecture
 
-```mermaid
-graph TB
-    subgraph "AWS Account"
-        subgraph "S3 Vectors"
-            VB[Vector Bucket]
-            VI[Vector Index]
-        end
-        
-        subgraph "Amazon Bedrock"
-            KB[Knowledge Base]
-            EM[Embedding Model]
-        end
-        
-        subgraph "IAM"
-            KBR[Knowledge Base Role]
-            LR[Lambda Execution Roles]
-        end
-        
-        subgraph "AWS Lambda"
-            BH[Bucket Handler]
-            IH[Index Handler] 
-            KBH[Knowledge Base Handler]
-        end
-        
-        subgraph "CloudFormation"
-            CR1[Custom Resource 1]
-            CR2[Custom Resource 2]
-            CR3[Custom Resource 3]
-        end
-    end
-    
-    CR1 --> BH
-    CR2 --> IH
-    CR3 --> KBH
-    
-    BH --> VB
-    IH --> VI
-    KBH --> KB
-    
-    VI -.-> VB
-    KB --> VI
-    KB --> EM
-    KB --> KBR
-    
-    KBR --> VB
-    KBR --> VI
-    
-    LR --> BH
-    LR --> IH
-    LR --> KBH
-```
+![Architecture Diagram](./architecture.png)
 
 ## License
 
