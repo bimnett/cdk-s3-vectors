@@ -94,7 +94,7 @@
           "exec": "cp -r src/lambda lib/"
         },
         {
-          "exec": "cd lib/lambda && npm install"
+          "exec": "cd lib/lambda && npm install --production"
         }
       ]
     },

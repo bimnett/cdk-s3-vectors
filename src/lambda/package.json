@@ -1,7 +1,10 @@
 {
-  "name": "s3-vectors-lambda-handlers",
+  "name": "cdk-s3-vectors-lambda",
   "version": "1.0.0",
+  "description": "Lambda functions for S3 Vectors CDK construct",
   "dependencies": {
-    "@aws-sdk/client-s3vectors": "^3.0.0"
+    "@aws-sdk/client-s3vectors": "^3.876.0",
+    "@aws-sdk/client-bedrock-agent": "^3.876.0",
+    "uuid": "^10.0.0"
   }
 }

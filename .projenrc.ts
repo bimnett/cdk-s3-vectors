@@ -50,6 +50,10 @@ const project = new awscdk.AwsCdkConstructLibrary({
 
 // Copy Lambda assets to lib directory after compilation
 project.compileTask.exec('cp -r src/lambda lib/');
-project.compileTask.exec('cd lib/lambda && npm install');
+project.compileTask.exec('cd lib/lambda && npm install --production');
+
+// Ensure Lambda dependencies are included in the npm package
+project.npmignore?.addPatterns('!lib/lambda/node_modules/**');
+project.addFields({ files: ['lib/**/*', '!lib/**/*.ts', '!lib/**/*.map'] });
 
 project.synth();
