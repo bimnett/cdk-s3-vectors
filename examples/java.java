@@ -3,7 +3,7 @@ import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
 import software.amazon.awscdk.services.kms.Key;
 import software.amazon.awscdk.services.kms.KeyProps;
-import com.bimnett.cdks3vectors.*;
+import io.github.bimnett.cdks3vectors.*;
 import java.util.Arrays;
 
 public class S3VectorsStack extends Stack {

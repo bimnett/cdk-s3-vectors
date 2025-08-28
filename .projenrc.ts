@@ -19,15 +19,15 @@ const project = new awscdk.AwsCdkConstructLibrary({
 
   // Java (Maven)
   publishToMaven: {
-    javaPackage: 'com.bimnett.cdks3vectors',
-    mavenGroupId: 'com.bimnett',
+    javaPackage: 'io.github.bimnett.cdks3vectors',
+    mavenGroupId: 'io.github.bimnett',
     mavenArtifactId: 'cdk-s3-vectors',
   },
 
   // C# (.NET / NuGet)
   publishToNuget: {
-    dotNetNamespace: 'Bimnett.CdkS3Vectors',
-    packageId: 'Bimnett.CdkS3Vectors',
+    dotNetNamespace: 'bimnett.CdkS3Vectors',
+    packageId: 'bimnett.CdkS3Vectors',
   },
 
   // Go

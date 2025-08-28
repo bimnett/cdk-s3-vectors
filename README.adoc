@@ -30,10 +30,10 @@ Logo] Python
 Logo] Typescript |`cdk-s3-vectors`
 
 |image:https://docs.aws.amazon.com/cdk/api/latest/img/java32.png[Java
-Logo] Java |`com.bimnett.cdks3vectors`
+Logo] Java |`io.github.bimnett.cdks3vectors`
 
 |image:https://docs.aws.amazon.com/cdk/api/latest/img/dotnet32.png[.NET
-Logo] .NET |`Bimnett.CdkS3Vectors`
+Logo] .NET |`bimnett.CdkS3Vectors`
 
 |image:https://docs.aws.amazon.com/cdk/api/latest/img/go32.png[Go
 Logo] Go |`github.com/bimnett/cdk-s3-vectors`

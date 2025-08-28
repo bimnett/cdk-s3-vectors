@@ -131,9 +131,9 @@
     "outdir": "dist",
     "targets": {
       "java": {
-        "package": "com.bimnett.cdks3vectors",
+        "package": "io.github.bimnett.cdks3vectors",
         "maven": {
-          "groupId": "com.bimnett",
+          "groupId": "io.github.bimnett",
           "artifactId": "cdk-s3-vectors"
         }
       },
@@ -142,8 +142,8 @@
         "module": "cdk_s3_vectors"
       },
       "dotnet": {
-        "namespace": "Bimnett.CdkS3Vectors",
-        "packageId": "Bimnett.CdkS3Vectors"
+        "namespace": "bimnett.CdkS3Vectors",
+        "packageId": "bimnett.CdkS3Vectors"
       },
       "go": {
         "moduleName": "github.com/bimnett/cdk-s3-vectors"

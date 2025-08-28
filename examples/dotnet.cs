@@ -1,7 +1,7 @@
 using Amazon.CDK;
 using Amazon.CDK.AWS.KMS;
 using Constructs;
-using Bimnett.CdkS3Vectors;
+using bimnett.CdkS3Vectors;
 
 namespace S3VectorsExample
 {
