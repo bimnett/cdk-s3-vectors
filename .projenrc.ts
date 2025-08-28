@@ -6,6 +6,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   authorName: 'Bimnet Tesfamariam',
   cdkVersion: '2.205.0',
   defaultReleaseBranch: 'main',
+  majorVersion: 0,
   jsiiVersion: '~5.8.0',
   name: 'cdk-s3-vectors',
   projenrcTs: true,
