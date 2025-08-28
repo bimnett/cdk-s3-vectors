@@ -1,276 +1,278 @@
-import { App, Stack } from 'aws-cdk-lib';
-import { Template, Match } from 'aws-cdk-lib/assertions';
-import { Role, ServicePrincipal, IGrantable } from 'aws-cdk-lib/aws-iam';
-import { Bucket, Index, S3VectorKnowledgeBase } from '../src';
+import * as cdk from 'aws-cdk-lib';
+import { Template } from 'aws-cdk-lib/assertions';
+import * as kms from 'aws-cdk-lib/aws-kms';
+import { Bucket, Index, KnowledgeBase } from '../src';
 
-// A helper construct to test the grantWrite method
-class TestGrantee extends Stack implements IGrantable {
-  public readonly grantPrincipal: Role;
-  constructor(scope: App, id: string) {
-    super(scope, id);
-    this.grantPrincipal = new Role(this, 'TestRole', {
-      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-    });
-  }
-}
-
-// ---- Bucket Construct Tests ----
-describe('Bucket Construct', () => {
-  let app: App;
-  let stack: Stack;
-  let template: Template;
+describe('S3 Vectors Constructs', () => {
+  let app: cdk.App;
+  let stack: cdk.Stack;
 
   beforeEach(() => {
-    app = new App();
-    stack = new Stack(app, 'TestStack');
-    new Bucket(stack, 'MyVectorBucket', {
-      bucketName: 'my-test-bucket',
-      region: 'us-east-1',
+    app = new cdk.App();
+    stack = new cdk.Stack(app, 'TestStack');
+  });
+
+  describe('Bucket', () => {
+    test('creates bucket with minimal props', () => {
+      new Bucket(stack, 'TestBucket', {
+        vectorBucketName: 'test-bucket',
+      });
+
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties('AWS::Lambda::Function', {
+        Handler: 's3-vectors-create-bucket.handler',
+        Runtime: 'nodejs22.x',
+      });
+      template.hasResourceProperties('AWS::CloudFormation::CustomResource', {
+        vectorBucketName: 'test-bucket',
+      });
     });
-    template = Template.fromStack(stack);
-  });
 
-  test('Creates a Custom Resource for the Bucket', () => {
-    template.hasResourceProperties('Custom::AWS', {
-      ServiceToken: Match.anyValue(),
-      Create: Match.serializedJson({
-        service: 'S3Vectors',
-        action: 'createVectorBucket',
-        parameters: Match.objectLike({
-          vectorBucketName: 'my-test-bucket',
-        }),
-        physicalResourceId: Match.anyValue(),
-        region: Match.anyValue(),
-      }),
-      Delete: Match.serializedJson({
-        service: 'S3Vectors',
-        action: 'deleteVectorBucket',
-        parameters: Match.objectLike({
-          vectorBucketName: 'my-test-bucket',
-        }),
-        region: Match.anyValue(),
-      }),
+    test('creates bucket with AES256 encryption', () => {
+      new Bucket(stack, 'TestBucket', {
+        vectorBucketName: 'test-bucket',
+        encryptionConfiguration: {
+          sseType: 'AES256',
+        },
+      });
+
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties('AWS::CloudFormation::CustomResource', {
+        encryptionConfiguration: {
+          sseType: 'AES256',
+        },
+      });
     });
-  });
 
-  test('Bucket Snapshot Test', () => {
-    expect(template.toJSON()).toMatchSnapshot();
-  });
-});
+    test('creates bucket with KMS encryption', () => {
+      const key = new kms.Key(stack, 'TestKey');
+      new Bucket(stack, 'TestBucket', {
+        vectorBucketName: 'test-bucket',
+        encryptionConfiguration: {
+          sseType: 'aws:kms',
+          kmsKey: key,
+        },
+      });
 
-// ---- Index Construct Tests ----
-describe('Index Construct', () => {
-  let app: App;
-  let stack: Stack;
-  let granteeStack: TestGrantee;
-
-  beforeEach(() => {
-    app = new App();
-    stack = new Stack(app, 'TestStack');
-    granteeStack = new TestGrantee(app, 'TestGranteeStack');
-  });
-
-  test('Index Creates a Custom Resource with correct props', () => {
-    new Index(stack, 'MyVectorIndex', {
-      bucketName: 'my-test-bucket',
-      region: 'us-east-1',
-      indexName: 'my-test-index',
-      dataType: 'float32',
-      dimension: 1536,
-      distanceMetric: 'cosine',
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties('AWS::KMS::Key', {});
     });
-    const template = Template.fromStack(stack);
-    template.hasResourceProperties('Custom::AWS', {
-      ServiceToken: Match.anyValue(),
-      Create: Match.serializedJson({
-        service: 'S3Vectors',
-        action: 'createIndex',
-        parameters: Match.objectLike({
-          vectorBucketName: 'my-test-bucket',
-          indexName: 'my-test-index',
-          dataType: 'float32',
-          dimension: 1536,
-          distanceMetric: 'cosine',
-        }),
-        physicalResourceId: Match.anyValue(),
-        region: Match.anyValue(),
-      }),
-      Delete: Match.serializedJson({
-        service: 'S3Vectors',
-        action: 'deleteIndex',
-        parameters: Match.objectLike({
-          vectorBucketName: 'my-test-bucket',
-          indexName: 'my-test-index',
-        }),
-        region: Match.anyValue(),
-      }),
+
+    test('throws error when KMS encryption specified without key', () => {
+      expect(() => {
+        new Bucket(stack, 'TestBucket', {
+          vectorBucketName: 'test-bucket',
+          encryptionConfiguration: {
+            sseType: 'aws:kms',
+          },
+        });
+      }).toThrow('A kmsKey object must be provided when sseType is set to aws:kms');
+    });
+
+    test('grants list indexes permission', () => {
+      const bucket = new Bucket(stack, 'TestBucket', {
+        vectorBucketName: 'test-bucket',
+      });
+      const role = new cdk.aws_iam.Role(stack, 'TestRole', {
+        assumedBy: new cdk.aws_iam.ServicePrincipal('lambda.amazonaws.com'),
+      });
+
+      bucket.grantListIndexes(role);
+
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties('AWS::IAM::Policy', {
+        PolicyDocument: {
+          Statement: [{
+            Action: 's3vectors:ListIndexes',
+            Effect: 'Allow',
+          }],
+        },
+      });
     });
   });
 
-  test('Index creates without bucket dependency', () => {
-    new Index(stack, 'MyVectorIndex', {
-      bucketName: 'my-test-bucket',
-      region: 'us-east-1',
-      indexName: 'my-test-index',
-      dataType: 'float32',
-      dimension: 1536,
-      distanceMetric: 'cosine',
-    });
-    const template = Template.fromStack(stack);
-
-    template.hasResource('Custom::AWS', {
-      Properties: Match.objectLike({
-        Create: Match.serializedJson({
-          service: 'S3Vectors',
-          action: 'createIndex',
-          parameters: Match.objectLike({
-            vectorBucketName: 'my-test-bucket',
-            indexName: 'my-test-index',
-          }),
-          physicalResourceId: Match.anyValue(),
-          region: Match.anyValue(),
-        }),
-      }),
-    });
-  });
-
-  test('grantWrite adds correct policy to grantee', () => {
-    const index = new Index(stack, 'MyVectorIndex', {
-      bucketName: 'my-test-bucket',
-      region: 'us-east-1',
-      indexName: 'my-test-index',
-      dataType: 'float32',
-      dimension: 1536,
-      distanceMetric: 'cosine',
-    });
-
-    index.grantWrite(granteeStack);
-
-    const granteeTemplate = Template.fromStack(granteeStack);
-
-    granteeTemplate.hasResourceProperties('AWS::IAM::Policy', {
-      PolicyDocument: Match.objectLike({
-        Statement: Match.arrayWith([
-          Match.objectLike({
-            Action: ['S3Vectors:addVectors', 'S3Vectors:deleteVectors'],
-            Resource: Match.objectLike({
-              'Fn::ImportValue': Match.anyValue(),
-            }),
-          }),
-        ]),
-      }),
-    });
-  });
-
-  test('Index validation throws for invalid dimension', () => {
-    expect(() => {
-      new Index(stack, 'InvalidIndex', {
-        bucketName: 'my-test-bucket',
-        region: 'us-east-1',
-        indexName: 'invalid-index',
+  describe('Index', () => {
+    test('creates index with minimal props', () => {
+      new Index(stack, 'TestIndex', {
+        vectorBucketName: 'test-bucket',
+        indexName: 'test-index',
         dataType: 'float32',
-        dimension: 0,
+        dimension: 1536,
         distanceMetric: 'cosine',
       });
-    }).toThrow('Dimension must be between 1 and 4096.');
-  });
-});
 
-// ---- S3VectorKnowledgeBase Construct Tests ----
-describe('S3VectorKnowledgeBase Construct', () => {
-  let app: App;
-  let stack: Stack;
-
-  beforeEach(() => {
-    app = new App();
-    stack = new Stack(app, 'TestStack');
-  });
-
-  test('Creates knowledge base with all required resources', () => {
-    new S3VectorKnowledgeBase(stack, 'MyKnowledgeBase', {
-      knowledgeBaseName: 'test-kb',
-      description: 'Test knowledge base',
-      embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1',
-      bucketProps: {
-        bucketName: 'test-vector-bucket',
-        region: 'us-east-1',
-      },
-      indexProps: {
-        bucketName: 'test-vector-bucket',
-        region: 'us-east-1',
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties('AWS::Lambda::Function', {
+        Handler: 's3-vectors-create-index.handler',
+        Runtime: 'nodejs22.x',
+      });
+      template.hasResourceProperties('AWS::CloudFormation::CustomResource', {
+        vectorBucketName: 'test-bucket',
         indexName: 'test-index',
         dataType: 'float32',
         dimension: 1536,
         distanceMetric: 'cosine',
-      },
+      });
     });
 
-    const template = Template.fromStack(stack);
+    test('creates index with metadata configuration', () => {
+      new Index(stack, 'TestIndex', {
+        vectorBucketName: 'test-bucket',
+        indexName: 'test-index',
+        dataType: 'float32',
+        dimension: 1536,
+        distanceMetric: 'euclidean',
+        metadataConfiguration: {
+          nonFilterableMetadataKeys: ['key1', 'key2'],
+        },
+      });
 
-    // Check that we have 3 custom resources (bucket, index, knowledge base)
-    template.resourceCountIs('Custom::AWS', 3);
-  });
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties('AWS::CloudFormation::CustomResource', {
+        metadataConfiguration: {
+          nonFilterableMetadataKeys: ['key1', 'key2'],
+        },
+      });
+    });
 
-  test('Creates IAM role with correct permissions', () => {
-    new S3VectorKnowledgeBase(stack, 'MyKnowledgeBase', {
-      knowledgeBaseName: 'test-kb',
-      embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1',
-      bucketProps: {
-        bucketName: 'test-vector-bucket',
-        region: 'us-east-1',
-      },
-      indexProps: {
-        bucketName: 'test-vector-bucket',
-        region: 'us-east-1',
+    test('throws error for invalid dimension', () => {
+      expect(() => {
+        new Index(stack, 'TestIndex', {
+          vectorBucketName: 'test-bucket',
+          indexName: 'test-index',
+          dataType: 'float32',
+          dimension: 0,
+          distanceMetric: 'cosine',
+        });
+      }).toThrow('Dimension must be between 1 and 4096.');
+
+      expect(() => {
+        new Index(stack, 'TestIndex2', {
+          vectorBucketName: 'test-bucket',
+          indexName: 'test-index',
+          dataType: 'float32',
+          dimension: 5000,
+          distanceMetric: 'cosine',
+        });
+      }).toThrow('Dimension must be between 1 and 4096.');
+    });
+
+    test('grants write permission', () => {
+      const index = new Index(stack, 'TestIndex', {
+        vectorBucketName: 'test-bucket',
         indexName: 'test-index',
         dataType: 'float32',
         dimension: 1536,
         distanceMetric: 'cosine',
-      },
+      });
+      const role = new cdk.aws_iam.Role(stack, 'TestRole', {
+        assumedBy: new cdk.aws_iam.ServicePrincipal('lambda.amazonaws.com'),
+      });
+
+      index.grantWrite(role);
+
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties('AWS::IAM::Policy', {
+        PolicyDocument: {
+          Statement: [{
+            Action: ['s3vectors:PutVectors', 's3vectors:DeleteVectors'],
+            Effect: 'Allow',
+          }],
+        },
+      });
     });
-
-    const template = Template.fromStack(stack);
-
-    // Check IAM role
-    template.hasResourceProperties('AWS::IAM::Role', {
-      AssumeRolePolicyDocument: {
-        Statement: [{
-          Principal: { Service: 'bedrock.amazonaws.com' },
-          Action: 'sts:AssumeRole',
-          Effect: 'Allow',
-        }],
-      },
-    });
-
-    // Check IAM role exists
-    template.hasResource('AWS::IAM::Role', {});
   });
 
-  test('Creates bucket and index resources', () => {
-    new S3VectorKnowledgeBase(stack, 'MyKnowledgeBase', {
-      knowledgeBaseName: 'test-kb',
-      embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1',
-      bucketProps: {
-        bucketName: 'test-vector-bucket',
-        region: 'us-east-1',
-      },
-      indexProps: {
-        bucketName: 'test-vector-bucket',
-        region: 'us-east-1',
-        indexName: 'test-index',
-        dataType: 'float32',
-        dimension: 1536,
-        distanceMetric: 'cosine',
-      },
+  describe('KnowledgeBase', () => {
+    test('creates knowledge base with minimal props', () => {
+      new KnowledgeBase(stack, 'TestKB', {
+        knowledgeBaseName: 'test-kb',
+        knowledgeBaseConfiguration: {
+          embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1',
+        },
+        vectorBucketArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket',
+        indexArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket/index/test-index',
+      });
+
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties('AWS::IAM::Role', {
+        AssumeRolePolicyDocument: {
+          Statement: [{
+            Principal: { Service: 'bedrock.amazonaws.com' },
+            Action: 'sts:AssumeRole',
+          }],
+        },
+      });
+      template.hasResourceProperties('AWS::Lambda::Function', {
+        Handler: 's3-vectors-create-kb.handler',
+        Runtime: 'nodejs22.x',
+      });
     });
 
-    const template = Template.fromStack(stack);
+    test('creates knowledge base with all props', () => {
+      new KnowledgeBase(stack, 'TestKB', {
+        knowledgeBaseName: 'test-kb',
+        description: 'Test knowledge base',
+        clientToken: 'a'.repeat(33),
+        knowledgeBaseConfiguration: {
+          embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1',
+          embeddingDataType: 'FLOAT32',
+          dimensions: '1536',
+        },
+        vectorBucketArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket',
+        indexArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket/index/test-index',
+      });
 
-    // Check that we have 3 custom resources (bucket, index, knowledge base)
-    template.resourceCountIs('Custom::AWS', 3);
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties('AWS::CloudFormation::CustomResource', {
+        knowledgeBaseName: 'test-kb',
+        description: 'Test knowledge base',
+        clientToken: 'a'.repeat(33),
+        knowledgeBaseConfiguration: {
+          embeddingDataType: 'FLOAT32',
+          dimensions: '1536',
+        },
+      });
+    });
 
-    // Verify all resources are created
-    template.hasResource('AWS::IAM::Role', {});
-    template.hasResource('AWS::IAM::Policy', {});
+    test('throws error for short client token', () => {
+      expect(() => {
+        new KnowledgeBase(stack, 'TestKB', {
+          knowledgeBaseName: 'test-kb',
+          clientToken: 'short',
+          knowledgeBaseConfiguration: {
+            embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1',
+          },
+          vectorBucketArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket',
+          indexArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket/index/test-index',
+        });
+      }).toThrow('The client token must have a length greater than or equal to 33.');
+    });
+
+    test('grants ingestion permission', () => {
+      const kb = new KnowledgeBase(stack, 'TestKB', {
+        knowledgeBaseName: 'test-kb',
+        knowledgeBaseConfiguration: {
+          embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1',
+        },
+        vectorBucketArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket',
+        indexArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket/index/test-index',
+      });
+      const role = new cdk.aws_iam.Role(stack, 'TestRole', {
+        assumedBy: new cdk.aws_iam.ServicePrincipal('lambda.amazonaws.com'),
+      });
+
+      kb.grantIngestion(role);
+
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties('AWS::IAM::Policy', {
+        PolicyDocument: {
+          Statement: [{
+            Action: 'bedrock:StartIngestionJob',
+            Effect: 'Allow',
+          }],
+        },
+      });
+    });
   });
 });
