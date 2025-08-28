@@ -42,9 +42,9 @@ This AWS CDK construct library provides high-level constructs for Amazon S3 Vect
 
 The library includes three main constructs:
 
-- **Bucket**: Creates S3 vector buckets with optional encryption
-- **Index**: Creates vector indexes within buckets for similarity search
-- **KnowledgeBase**: Creates Amazon Bedrock knowledge bases using S3 Vectors as the vector store
+* **Bucket**: Creates S3 vector buckets with optional encryption
+* **Index**: Creates vector indexes within buckets for similarity search
+* **KnowledgeBase**: Creates Amazon Bedrock knowledge bases using S3 Vectors as the vector store
 
 == Examples
 
