@@ -1,2 +1,332 @@
-# cdk-s3-vectors
-A custom CDK construct library for S3 Vectors.
+//!!NODE_ROOT <section>
+//== cdk-s3-vectors module
+
+[.topic]
+= cdk-s3-vectors
+:info_doctype: section
+:info_title: cdk-s3-vectors
+
+image:https://img.shields.io/badge/cfn--resources-stable-success.svg?style=for-the-badge[Stability:Stable]
+
+[width="100%",cols="<50%,<50%",options="header",]
+|===
+|*Reference Documentation*:
+|https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors.html
+|===
+
+[width="100%",cols="<46%,54%",options="header",]
+|===
+|*Language* |*Package*
+|image:https://docs.aws.amazon.com/cdk/api/latest/img/python32.png[Python
+Logo] Python
+|`cdk-s3-vectors`
+
+|image:https://docs.aws.amazon.com/cdk/api/latest/img/typescript32.png[Typescript
+Logo] Typescript |`cdk-s3-vectors`
+
+|image:https://docs.aws.amazon.com/cdk/api/latest/img/java32.png[Java
+Logo] Java |`com.bimnett.cdks3vectors`
+
+|image:https://docs.aws.amazon.com/cdk/api/latest/img/dotnet32.png[.NET
+Logo] .NET |`Bimnett.CdkS3Vectors`
+
+|image:https://docs.aws.amazon.com/cdk/api/latest/img/go32.png[Go
+Logo] Go |`github.com/bimnett/cdk-s3-vectors`
+|===
+
+== Overview
+
+This AWS CDK construct library provides high-level constructs for Amazon S3 Vectors, enabling you to create vector buckets, indexes, and knowledge bases for AI/ML applications. Amazon S3 Vectors is in preview release and provides native vector storage and similarity search capabilities within Amazon S3.
+
+The library includes three main constructs:
+- **Bucket**: Creates S3 vector buckets with optional encryption
+- **Index**: Creates vector indexes within buckets for similarity search
+- **KnowledgeBase**: Creates Amazon Bedrock knowledge bases using S3 Vectors as the vector store
+
+Here is a minimal deployable pattern definition:
+
+====
+[role="tablist"]
+Typescript::
++
+[source,typescript]
+----
+import { Construct } from 'constructs';
+import { Stack, StackProps } from 'aws-cdk-lib';
+import { Bucket, Index, KnowledgeBase } from 'cdk-s3-vectors';
+
+// Create a vector bucket
+const vectorBucket = new Bucket(this, 'VectorBucket', {
+  vectorBucketName: 'my-vector-bucket',
+});
+
+// Create a vector index
+const vectorIndex = new Index(this, 'VectorIndex', {
+  vectorBucketName: vectorBucket.vectorBucketName,
+  indexName: 'my-index',
+  dataType: 'float32',
+  dimension: 1536,
+  distanceMetric: 'cosine',
+});
+
+// Create a knowledge base
+const knowledgeBase = new KnowledgeBase(this, 'KnowledgeBase', {
+  knowledgeBaseName: 'my-knowledge-base',
+  vectorBucketArn: vectorBucket.vectorBucketArn,
+  indexArn: vectorIndex.indexArn,
+  knowledgeBaseConfiguration: {
+    embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1',
+  },
+});
+----
+
+Python::
++
+[source,python]
+----
+from cdk_s3_vectors import Bucket, Index, KnowledgeBase
+from aws_cdk import Stack
+from constructs import Construct
+
+# Create a vector bucket
+vector_bucket = Bucket(self, 'VectorBucket',
+    vector_bucket_name='my-vector-bucket'
+)
+
+# Create a vector index
+vector_index = Index(self, 'VectorIndex',
+    vector_bucket_name=vector_bucket.vector_bucket_name,
+    index_name='my-index',
+    data_type='float32',
+    dimension=1536,
+    distance_metric='cosine'
+)
+
+# Create a knowledge base
+knowledge_base = KnowledgeBase(self, 'KnowledgeBase',
+    knowledge_base_name='my-knowledge-base',
+    vector_bucket_arn=vector_bucket.vector_bucket_arn,
+    index_arn=vector_index.index_arn,
+    knowledge_base_configuration={
+        'embedding_model_arn': 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1'
+    }
+)
+----
+
+Java::
++
+[source,java]
+----
+import software.constructs.Construct;
+import software.amazon.awscdk.Stack;
+import software.amazon.awscdk.StackProps;
+import com.bimnett.cdks3vectors.*;
+
+// Create a vector bucket
+Bucket vectorBucket = new Bucket(this, "VectorBucket", BucketProps.builder()
+    .vectorBucketName("my-vector-bucket")
+    .build());
+
+// Create a vector index
+Index vectorIndex = new Index(this, "VectorIndex", IndexProps.builder()
+    .vectorBucketName(vectorBucket.getVectorBucketName())
+    .indexName("my-index")
+    .dataType("float32")
+    .dimension(1536)
+    .distanceMetric("cosine")
+    .build());
+
+// Create a knowledge base
+KnowledgeBase knowledgeBase = new KnowledgeBase(this, "KnowledgeBase", 
+    KnowledgeBaseProps.builder()
+        .knowledgeBaseName("my-knowledge-base")
+        .vectorBucketArn(vectorBucket.getVectorBucketArn())
+        .indexArn(vectorIndex.getIndexArn())
+        .knowledgeBaseConfiguration(KnowledgeBaseConfiguration.builder()
+            .embeddingModelArn("arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1")
+            .build())
+        .build());
+----
+====
+
+== Bucket Construct Props
+
+[width="100%",cols="<30%,<35%,35%",options="header",]
+|===
+|*Name* |*Type* |*Description*
+|vectorBucketName
+|`string`
+|The name of the vector bucket to create.
+
+|encryptionConfiguration?
+|`EncryptionConfiguration`
+|Optional encryption configuration for the vector bucket. Defaults to AES256.
+|===
+
+== Index Construct Props
+
+[width="100%",cols="<30%,<35%,35%",options="header",]
+|===
+|*Name* |*Type* |*Description*
+|vectorBucketName
+|`string`
+|The name of the vector bucket to create the index in.
+
+|indexName
+|`string`
+|The name of the vector index to create.
+
+|dataType
+|`'float32'`
+|The data type of the vectors in the index.
+
+|dimension
+|`number`
+|The dimensions of the vectors (1-4096).
+
+|distanceMetric
+|`'euclidean' \| 'cosine'`
+|The distance metric for similarity search.
+
+|metadataConfiguration?
+|`MetadataConfiguration`
+|Optional metadata configuration for the index.
+|===
+
+== KnowledgeBase Construct Props
+
+[width="100%",cols="<30%,<35%,35%",options="header",]
+|===
+|*Name* |*Type* |*Description*
+|knowledgeBaseName
+|`string`
+|The name of the knowledge base to create.
+
+|knowledgeBaseConfiguration
+|`KnowledgeBaseConfiguration`
+|Vector embeddings configuration details.
+
+|vectorBucketArn
+|`string`
+|The ARN of the S3 vector bucket.
+
+|indexArn
+|`string`
+|The ARN of the vector index.
+
+|description?
+|`string`
+|Optional description of the knowledge base.
+
+|clientToken?
+|`string`
+|Optional idempotency token (≥33 characters).
+|===
+
+== Pattern Properties
+
+[width="100%",cols="<30%,<35%,35%",options="header",]
+|===
+|*Name* |*Type* |*Description*
+|vectorBucketName
+|`string`
+|Returns the name of the created vector bucket
+
+|vectorBucketArn
+|`string`
+|Returns the ARN of the created vector bucket
+
+|indexArn
+|`string`
+|Returns the ARN of the created vector index
+
+|indexName
+|`string`
+|Returns the name of the created vector index
+
+|knowledgeBaseId
+|`string`
+|Returns the ID of the created knowledge base
+
+|knowledgeBaseArn
+|`string`
+|Returns the ARN of the created knowledge base
+|===
+
+== Default settings
+
+Out of the box implementation of the constructs without any override will set the following defaults:
+
+=== Amazon S3 Vector Bucket
+
+* Server-side encryption with Amazon S3 managed keys (SSE-S3) using AES256
+* Least privilege IAM permissions for vector operations
+* Custom resource handlers for bucket lifecycle management
+
+=== Vector Index
+
+* Support for float32 data type vectors
+* Configurable dimensions (1-4096)
+* Choice of euclidean or cosine distance metrics
+* Optional metadata configuration for enhanced search capabilities
+
+=== Amazon Bedrock Knowledge Base
+
+* Integration with S3 Vectors as the vector store
+* Configurable embedding models
+* IAM role with least privilege permissions
+* Support for various embedding data types and dimensions
+
+== Architecture
+
+```mermaid
+graph TB
+    subgraph "AWS Account"
+        subgraph "S3 Vectors"
+            VB[Vector Bucket]
+            VI[Vector Index]
+        end
+        
+        subgraph "Amazon Bedrock"
+            KB[Knowledge Base]
+            EM[Embedding Model]
+        end
+        
+        subgraph "IAM"
+            KBR[Knowledge Base Role]
+            LR[Lambda Execution Roles]
+        end
+        
+        subgraph "AWS Lambda"
+            BH[Bucket Handler]
+            IH[Index Handler] 
+            KBH[Knowledge Base Handler]
+        end
+        
+        subgraph "CloudFormation"
+            CR1[Custom Resource 1]
+            CR2[Custom Resource 2]
+            CR3[Custom Resource 3]
+        end
+    end
+    
+    CR1 --> BH
+    CR2 --> IH
+    CR3 --> KBH
+    
+    BH --> VB
+    IH --> VI
+    KBH --> KB
+    
+    VI -.-> VB
+    KB --> VI
+    KB --> EM
+    KB --> KBR
+    
+    KBR --> VB
+    KBR --> VI
+    
+    LR --> BH
+    LR --> IH
+    LR --> KBH
+```
