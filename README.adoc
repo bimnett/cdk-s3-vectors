@@ -8,6 +8,11 @@
 
 image:https://img.shields.io/badge/cfn--resources-stable-success.svg?style=for-the-badge[Stability:Stable]
 
+[IMPORTANT]
+====
+**Maintenance Notice**: This library is intended as a temporary solution and will only be maintained until AWS CloudFormation and CDK introduce native support for Amazon S3 Vectors. Once native support is available, users are encouraged to migrate to the official AWS constructs.
+====
+
 [width="100%",cols="<50%,<50%",options="header",]
 |===
 |*Reference Documentation*:
@@ -231,3 +236,7 @@ graph TB
     LR --> IH
     LR --> KBH
 ```
+
+== License
+
+This project is licensed under the Apache License 2.0. See link:LICENSE[LICENSE] file for details.
