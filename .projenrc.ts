@@ -54,6 +54,6 @@ project.compileTask.exec('cd lib/lambda && npm install --production');
 
 // Ensure Lambda dependencies are included in the npm package
 project.npmignore?.addPatterns('!lib/lambda/node_modules/**');
-project.addFields({ files: ['lib/**/*', '!lib/**/*.ts', '!lib/**/*.map'] });
+project.addFields({ files: ['lib/**/*.js', 'lib/**/*.d.ts', 'lib/lambda/**/*', '!lib/**/*.map'] });
 
 project.synth();
