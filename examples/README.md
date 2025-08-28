@@ -4,11 +4,9 @@ This directory contains complete examples for using the CDK S3 Vectors construct
 
 ## Available Examples
 
-- **[TypeScript/JavaScript](typescript.ts)** - Complete TypeScript implementation
+- **[TypeScript/JavaScript](typescript.ts)** - Complete TypeScript/Javascript implementation
 - **[Python](python.py)** - Complete Python implementation  
-- **[Java](java.java)** - Complete Java implementation
 - **[.NET/C#](dotnet.cs)** - Complete C# implementation
-- **[Go](go.go)** - Complete Go implementation
 
 ## Key Features Demonstrated
 
