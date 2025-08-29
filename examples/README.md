@@ -2,6 +2,8 @@
 
 This directory contains complete examples for using the CDK S3 Vectors construct library in different programming languages.
 
+**IMPORTANT:** The constructs library version must be >= 10.0.5.
+
 ## Available Examples
 
 - **[TypeScript/JavaScript](typescript.ts)** - Complete TypeScript/Javascript implementation

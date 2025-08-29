@@ -1,7 +1,7 @@
 using Amazon.CDK;
 using Amazon.CDK.AWS.KMS;
 using Constructs;
-using bimnett.CdkS3Vectors;
+using s3Vectors = bimnett.CdkS3Vectors;
 
 namespace S3VectorsExample
 {
@@ -17,27 +17,27 @@ namespace S3VectorsExample
             });
 
             // Create a vector bucket with all options
-            var vectorBucket = new Bucket(this, "VectorBucket", new BucketProps
+            var vectorBucket = new s3Vectors.Bucket(this, "VectorBucket", new s3Vectors.BucketProps
             {
                 VectorBucketName = "my-vector-bucket", // REQUIRED
                 // Optional encryption configuration
-                EncryptionConfiguration = new EncryptionConfiguration
+                EncryptionConfiguration = new s3Vectors.EncryptionConfiguration
                 {
-                    SseType = "aws:kms", // "AES256" | "aws:kms"
-                    KmsKey = encryptionKey // Required when SseType is "aws:kms"
+                    SseType = "aws:kms", // 'AES256' | 'aws:kms'
+                    KmsKey = encryptionKey // Required when sseType is 'aws:kms'
                 }
             });
 
             // Create a vector index with all options
-            var vectorIndex = new Index(this, "VectorIndex", new IndexProps
+            var vectorIndex = new s3Vectors.Index(this, "VectorIndex", new s3Vectors.IndexProps
             {
                 VectorBucketName = vectorBucket.VectorBucketName, // REQUIRED
                 IndexName = "my-index", // REQUIRED
-                DataType = "float32", // REQUIRED (only "float32" supported)
-                Dimension = 1536, // REQUIRED (1-4096)
-                DistanceMetric = "cosine", // REQUIRED ("euclidean" | "cosine")
+                DataType = "float32", // REQUIRED (only 'float32' supported)
+                Dimension = 1024, // REQUIRED (1-4096)
+                DistanceMetric = "cosine", // REQUIRED ('euclidean' | 'cosine'
                 // Optional metadata configuration
-                MetadataConfiguration = new MetadataConfiguration
+                MetadataConfiguration = new s3Vectors.MetadataConfiguration
                 {
                     NonFilterableMetadataKeys = new[] { "source", "timestamp", "category" }
                 }
@@ -45,21 +45,21 @@ namespace S3VectorsExample
             vectorIndex.Node.AddDependency(vectorBucket);
 
             // Create a knowledge base with all options
-            var knowledgeBase = new KnowledgeBase(this, "KnowledgeBase", new KnowledgeBaseProps
+            var knowledgeBase = new s3Vectors.KnowledgeBase(this, "KnowledgeBase", new s3Vectors.KnowledgeBaseProps
             {
                 KnowledgeBaseName = "my-knowledge-base", // REQUIRED
                 VectorBucketArn = vectorBucket.VectorBucketArn, // REQUIRED
                 IndexArn = vectorIndex.IndexArn, // REQUIRED
                 // REQUIRED knowledge base configuration
-                KnowledgeBaseConfiguration = new KnowledgeBaseConfiguration
+                KnowledgeBaseConfiguration = new s3Vectors.KnowledgeBaseConfiguration
                 {
-                    EmbeddingModelArn = "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1", // REQUIRED
-                    EmbeddingDataType = "FLOAT32", // Optional: "BINARY" | "FLOAT32"
-                    Dimensions = "1536" // Optional: dimensions as string
+                    EmbeddingModelArn = "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0", // REQUIRED
+                    EmbeddingDataType = "FLOAT32", // Optional: 'BINARY' | 'FLOAT32'
+                    Dimensions = "1024" // Optional: dimensions as string
                 },
                 // Optional fields
                 Description = "Knowledge base for vector similarity search using S3 Vectors",
-                ClientToken = "unique-client-token-12345678901234567890123456789012345" // Optional: ≥33 characters for idempotency
+                ClientToken = "unique-client-token-12345678901234567890123456789012345" // Must be >= 33 characters
             });
             knowledgeBase.Node.AddDependency(vectorIndex);
             knowledgeBase.Node.AddDependency(vectorBucket);

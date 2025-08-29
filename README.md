@@ -32,6 +32,8 @@ The library includes three main constructs:
 - **Index**: Creates vector indexes within buckets for similarity search
 - **KnowledgeBase**: Creates Amazon Bedrock knowledge bases using S3 Vectors as the vector store
 
+**IMPORTANT:** The `constructs` library version must be >= 10.0.5.
+
 ## Examples
 
 For complete, deployable examples in all supported languages, see the [examples directory](examples/).
