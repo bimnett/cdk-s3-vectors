@@ -8,7 +8,19 @@ This directory contains complete examples for using the CDK S3 Vectors construct
 
 - **[TypeScript/JavaScript](typescript.ts)** - Complete TypeScript/Javascript implementation
 - **[Python](python.py)** - Complete Python implementation  
+- **[Java](#java.java)** - Complete Java implementation
 - **[.NET/C#](dotnet.cs)** - Complete C# implementation
+
+## Java Maven Dependency
+
+Add the following dependency to your `pom.xml`:
+```xml
+<dependency>
+    <groupId>io.github.bimnett</groupId>
+    <artifactId>cdk-s3-vectors</artifactId>
+    <version>LATEST</version> // Or a specific version
+</dependency>
+```
 
 ## Key Features Demonstrated
 

@@ -24,6 +24,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     packageId: 'bimnett.CdkS3Vectors',
   },
 
+
   bundledDeps: [
     '@aws-sdk/client-s3vectors',
     '@aws-sdk/client-bedrock-agent',
