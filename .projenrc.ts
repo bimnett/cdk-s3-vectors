@@ -24,12 +24,6 @@ const project = new awscdk.AwsCdkConstructLibrary({
     packageId: 'bimnett.CdkS3Vectors',
   },
 
-  // Java (Maven)
-  publishToMaven: {
-    javaPackage: 'io.github.bimnett.cdks3vectors',
-    mavenGroupId: 'io.github.bimnett',
-    mavenArtifactId: 'cdk-s3-vectors',
-  },
 
   bundledDeps: [
     '@aws-sdk/client-s3vectors',
@@ -50,9 +44,5 @@ project.compileTask.exec('cd lib/lambda && npm install --production');
 // Ensure Lambda dependencies are included in the npm package
 project.npmignore?.addPatterns('!lib/lambda/node_modules/**');
 project.addFields({ files: ['lib/**/*.js', 'lib/**/*.d.ts', 'lib/lambda/**/*', '!lib/**/*.map', '.jsii'] });
-
-// Remove Maven release job after synthesis
-project.compileTask.exec('sed -i "" "131,175d" .github/workflows/release.yml 2>/dev/null || true');
-project.compileTask.exec('sed -i "" "/- release_maven/d" .github/workflows/release.yml 2>/dev/null || true');
 
 project.synth();

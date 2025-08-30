@@ -95,12 +95,6 @@
         },
         {
           "exec": "cd lib/lambda && npm install --production"
-        },
-        {
-          "exec": "sed -i \"\" \"131,175d\" .github/workflows/release.yml 2>/dev/null || true"
-        },
-        {
-          "exec": "sed -i \"\" \"/- release_maven/d\" .github/workflows/release.yml 2>/dev/null || true"
         }
       ]
     },
@@ -187,9 +181,6 @@
           "spawn": "package:js"
         },
         {
-          "spawn": "package:java"
-        },
-        {
           "spawn": "package:python"
         },
         {
@@ -203,15 +194,6 @@
       "steps": [
         {
           "exec": "jsii-pacmak -v --target dotnet"
-        }
-      ]
-    },
-    "package:java": {
-      "name": "package:java",
-      "description": "Create java language bindings",
-      "steps": [
-        {
-          "exec": "jsii-pacmak -v --target java"
         }
       ]
     },
