@@ -51,4 +51,8 @@ project.compileTask.exec('cd lib/lambda && npm install --production');
 project.npmignore?.addPatterns('!lib/lambda/node_modules/**');
 project.addFields({ files: ['lib/**/*.js', 'lib/**/*.d.ts', 'lib/lambda/**/*', '!lib/**/*.map', '.jsii'] });
 
+// Remove Maven release job after synthesis
+project.compileTask.exec('sed -i "" "131,175d" .github/workflows/release.yml 2>/dev/null || true');
+project.compileTask.exec('sed -i "" "/- release_maven/d" .github/workflows/release.yml 2>/dev/null || true');
+
 project.synth();

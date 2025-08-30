@@ -95,6 +95,12 @@
         },
         {
           "exec": "cd lib/lambda && npm install --production"
+        },
+        {
+          "exec": "sed -i \"\" \"131,175d\" .github/workflows/release.yml 2>/dev/null || true"
+        },
+        {
+          "exec": "sed -i \"\" \"/- release_maven/d\" .github/workflows/release.yml 2>/dev/null || true"
         }
       ]
     },
