@@ -24,6 +24,13 @@ const project = new awscdk.AwsCdkConstructLibrary({
     packageId: 'bimnett.CdkS3Vectors',
   },
 
+  // Java (Maven)
+  publishToMaven: {
+    javaPackage: 'io.github.bimnett.cdks3vectors',
+    mavenGroupId: 'io.github.bimnett',
+    mavenArtifactId: 'cdk-s3-vectors',
+  },
+
   bundledDeps: [
     '@aws-sdk/client-s3vectors',
     '@aws-sdk/client-bedrock-agent',
