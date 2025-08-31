@@ -12,6 +12,15 @@ const project = new awscdk.AwsCdkConstructLibrary({
   projenrcTs: true,
   repositoryUrl: 'https://github.com/bimnett/cdk-s3-vectors.git',
 
+  description: 'A CDK construct library for Amazon S3 Vectors. This construct simplifies the creation of vector buckets, vector indexes with full configuration options, and Amazon Bedrock knowledge bases using S3 Vectors as the underlying vector store.',
+  keywords: [
+    'S3 Vectors',
+    'Amazon S3',
+    'Vector',
+    'Vectors',
+    'Knowledge Base',
+  ],
+
   // Python
   publishToPypi: {
     distName: 'cdk-s3-vectors',

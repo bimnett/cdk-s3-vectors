@@ -1,5 +1,6 @@
 {
   "name": "cdk-s3-vectors",
+  "description": "A CDK construct library for Amazon S3 Vectors. This construct simplifies the creation of vector buckets, vector indexes with full configuration options, and Amazon Bedrock knowledge bases using S3 Vectors as the underlying vector store.",
   "repository": {
     "type": "git",
     "url": "https://github.com/bimnett/cdk-s3-vectors.git"
@@ -74,6 +75,11 @@
     "uuid"
   ],
   "keywords": [
+    "Amazon S3",
+    "Knowledge Base",
+    "S3 Vectors",
+    "Vector",
+    "Vectors",
     "cdk"
   ],
   "main": "lib/index.js",
