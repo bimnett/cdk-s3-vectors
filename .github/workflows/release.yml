@@ -172,30 +172,44 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-    if: ${{ needs.release.outputs.tag_exists != 'true' && needs.release.outputs.latest_commit == github.sha }}
+      contents: read
+    if: needs.release.outputs.tag_exists != 'true' && needs.release.outputs.latest_commit == github.sha
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
-          fetch-depth: 0
-      - name: Download Java artifact
+          distribution: corretto
+          java-version: "11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: java-artifact
-          path: dist/java
-      - name: Get latest release tag
-        id: get_tag
-        run: |
-          TAG=$(git describe --tags --abbrev=0)
-          echo "LATEST_VERSION=${TAG}" >> $GITHUB_ENV
+          name: build-artifact
+          path: dist
+      - name: Restore build artifact permissions
+        run: cd dist && setfacl --restore=permissions-backup.acl
+        continue-on-error: true
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: .repo
+      - name: Install Dependencies
+        run: cd .repo && yarn install --check-files --frozen-lockfile
+      - name: Extract build artifact
+        run: tar --strip-components=1 -xzvf dist/js/*.tgz -C .repo
+      - name: Move build artifact out of the way
+        run: mv dist dist.old
+      - name: Create java artifact
+        run: cd .repo && npx projen package:java
+      - name: Collect java artifact
+        run: mv .repo/dist dist
       - name: Import GPG key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
       - name: Sign artifacts
         run: |
-          VERSION=$(echo "${{ env.LATEST_VERSION }}" | sed 's/^v//')
-          cd dist/java/io/github/bimnett/cdk-s3-vectors/$VERSION
+          cd dist/java
           for file in $(find . -type f \( -name "*.jar" -o -name "*.pom" \)); do
               echo "Signing ${file}..."
               echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --armor --detach-sign "${file}"
@@ -203,15 +217,20 @@ jobs:
       - name: Create Maven deployment bundle
         run: |
           cd dist/java
-          zip -r ../../maven-bundle.zip io
+          zip -r ../../maven-bundle.zip .
+      - name: Get version from dist
+        id: get_version
+        run: |
+          TAG=$(cat dist.old/releasetag.txt)
+          VERSION=$(echo "$TAG" | sed 's/^v//')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
       - name: Upload and Publish to Sonatype
         run: |
-          VERSION=$(echo "${{ env.LATEST_VERSION }}" | sed 's/^v//')
           curl --request POST \
           --user "${{ secrets.MAVEN_USERNAME }}:${{ secrets.MAVEN_PASSWORD }}" \
           --header "Content-Type: multipart/form-data" \
           --form "bundle=@maven-bundle.zip" \
-          "https://central.sonatype.com/api/v1/publisher/upload?publishingType=USER_MANAGED&name=cdk-s3-vectors-$VERSION"
+          "https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC&name=cdk-s3-vectors-${{ env.VERSION }}"
   release_nuget:
     name: Publish to NuGet Gallery
     needs: release
