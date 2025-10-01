@@ -37,6 +37,24 @@ jobs:
           npm run compile
           cp -r src/lambda lib/
           cd lib/lambda && npm install --production
+      - name: Generate API doc
+        run: npx jsii-docgen -o API.md
+      - name: Run tests
+        run: npx jest --passWithNoTests --updateSnapshot
+      - name: Bump version and create changelog
+        run: |
+          rm -fr dist
+          npx projen bump
+      - name: Update package.json with bumped version
+        run: |
+          VERSION=$(cat dist/version.txt)
+          node -e "
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkg.version = '$VERSION';
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
+          echo "Updated package.json to version $VERSION"
       - name: Configure package for Lambda assets
         run: |
           echo "!lib/lambda/node_modules/**" >> .npmignore
@@ -50,14 +68,6 @@ jobs:
           });
           fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           "
-      - name: Generate API doc
-        run: npx jsii-docgen -o API.md
-      - name: Run tests
-        run: npx jest --passWithNoTests --updateSnapshot
-      - name: Bump version and create changelog
-        run: |
-          rm -fr dist
-          npx projen bump
       - name: Package JS distribution
         run: npx projen package:js
       - name: Check if version has already been tagged
