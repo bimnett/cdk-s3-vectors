@@ -18,6 +18,7 @@
     "package": "npx projen package",
     "package-all": "npx projen package-all",
     "package:dotnet": "npx projen package:dotnet",
+    "package:java": "npx projen package:java",
     "package:js": "npx projen package:js",
     "package:python": "npx projen package:python",
     "post-compile": "npx projen post-compile",
@@ -138,6 +139,13 @@
   "jsii": {
     "outdir": "dist",
     "targets": {
+      "java": {
+        "package": "io.github.bimnett.cdks3vectors",
+        "maven": {
+          "groupId": "io.github.bimnett",
+          "artifactId": "cdk-s3-vectors"
+        }
+      },
       "python": {
         "distName": "cdk-s3-vectors",
         "module": "cdk_s3_vectors"
