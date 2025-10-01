@@ -30,6 +30,8 @@ jobs:
         run: npx jsii-docgen -o API.md
       - name: Run tests
         run: npx jest --passWithNoTests --updateSnapshot
+      - name: Create repo.patch
+        run: git diff --binary > repo.patch
       - name: Upload patch
         uses: actions/upload-artifact@v4.4.0
         with:
