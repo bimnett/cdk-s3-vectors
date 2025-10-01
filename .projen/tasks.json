@@ -181,6 +181,9 @@
           "spawn": "package:js"
         },
         {
+          "spawn": "package:java"
+        },
+        {
           "spawn": "package:python"
         },
         {
@@ -194,6 +197,15 @@
       "steps": [
         {
           "exec": "jsii-pacmak -v --target dotnet"
+        }
+      ]
+    },
+    "package:java": {
+      "name": "package:java",
+      "description": "Create java language bindings",
+      "steps": [
+        {
+          "exec": "jsii-pacmak -v --target java"
         }
       ]
     },
@@ -212,15 +224,6 @@
       "steps": [
         {
           "exec": "jsii-pacmak -v --target python"
-        }
-      ]
-    },
-    "package:java": {
-      "name": "package:java",
-      "description": "Create java language bindings",
-      "steps": [
-        {
-          "exec": "jsii-pacmak -v --target java"
         }
       ]
     },
