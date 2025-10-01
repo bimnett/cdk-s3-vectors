@@ -26,6 +26,22 @@ jobs:
           npm run compile
           cp -r src/lambda lib/
           cd lib/lambda && npm install --production
+      - name: Configure package for Lambda assets
+        run: |
+          # Add Lambda patterns to .npmignore to include node_modules
+          echo "!lib/lambda/node_modules/**" >> .npmignore
+          
+          # Update package.json to include Lambda files
+          node -e "
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkg.files = pkg.files || [];
+          const filesToAdd = ['lib/**/*.js', 'lib/**/*.d.ts', 'lib/lambda/**/*', '!lib/**/*.map', '.jsii'];
+          filesToAdd.forEach(f => {
+            if (!pkg.files.includes(f)) pkg.files.push(f);
+          });
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
       - name: Generate API doc
         run: npx jsii-docgen -o API.md
       - name: Run tests
