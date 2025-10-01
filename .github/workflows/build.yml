@@ -38,6 +38,8 @@ jobs:
           name: repo.patch
           path: repo.patch
           overwrite: true
+      - name: Build package
+        run: npx projen package:js
       - name: Backup artifact permissions
         run: cd dist && getfacl -R . > permissions-backup.acl
         continue-on-error: true
