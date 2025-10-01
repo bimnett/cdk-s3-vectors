@@ -142,6 +142,13 @@
         "distName": "cdk-s3-vectors",
         "module": "cdk_s3_vectors"
       },
+      "java": {
+        "package": "io.github.bimnett.cdks3vectors",
+        "maven": {
+          "groupId": "io.github.bimnett",
+          "artifactId": "cdk-s3-vectors"
+        }
+      },
       "dotnet": {
         "namespace": "bimnett.CdkS3Vectors",
         "packageId": "bimnett.CdkS3Vectors"
