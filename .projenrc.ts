@@ -10,6 +10,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   jsiiVersion: '~5.8.0',
   name: 'cdk-s3-vectors',
   projenrcTs: true,
+  github: false,
   repositoryUrl: 'https://github.com/bimnett/cdk-s3-vectors.git',
 
   description: 'A CDK construct library for Amazon S3 Vectors. This construct simplifies the creation of vector buckets, vector indexes with full configuration options, and Amazon Bedrock knowledge bases using S3 Vectors as the underlying vector store.',
@@ -20,19 +21,6 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'Vectors',
     'Knowledge Base',
   ],
-
-  // Python
-  publishToPypi: {
-    distName: 'cdk-s3-vectors',
-    module: 'cdk_s3_vectors',
-  },
-
-  // C# (.NET / NuGet)
-  publishToNuget: {
-    dotNetNamespace: 'bimnett.CdkS3Vectors',
-    packageId: 'bimnett.CdkS3Vectors',
-  },
-
 
   bundledDeps: [
     '@aws-sdk/client-s3vectors',
