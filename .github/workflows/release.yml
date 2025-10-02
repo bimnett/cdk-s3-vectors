@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - 10-fix-broken-release-workflow
   workflow_dispatch: {}
 concurrency:
   group: ${{ github.workflow }}
