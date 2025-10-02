@@ -420,6 +420,7 @@ Any object.
 | <code><a href="#cdk-s3-vectors.KnowledgeBase.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 | <code><a href="#cdk-s3-vectors.KnowledgeBase.property.knowledgeBaseArn">knowledgeBaseArn</a></code> | <code>string</code> | The Amazon Resource Name (ARN) of the knowledge base. |
 | <code><a href="#cdk-s3-vectors.KnowledgeBase.property.knowledgeBaseId">knowledgeBaseId</a></code> | <code>string</code> | The ID of the knowledge base. |
+| <code><a href="#cdk-s3-vectors.KnowledgeBase.property.role">role</a></code> | <code>aws-cdk-lib.aws_iam.Role</code> | The IAM role for the knowledge base. |
 
 ---
 
@@ -456,6 +457,18 @@ public readonly knowledgeBaseId: string;
 - *Type:* string
 
 The ID of the knowledge base.
+
+---
+
+##### `role`<sup>Required</sup> <a name="role" id="cdk-s3-vectors.KnowledgeBase.property.role"></a>
+
+```typescript
+public readonly role: Role;
+```
+
+- *Type:* aws-cdk-lib.aws_iam.Role
+
+The IAM role for the knowledge base.
 
 ---
 
