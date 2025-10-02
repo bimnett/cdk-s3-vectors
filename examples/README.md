@@ -8,8 +8,8 @@ This directory contains complete examples for using the CDK S3 Vectors construct
 
 - **[TypeScript/JavaScript](typescript.ts)** - Complete TypeScript/Javascript implementation
 - **[Python](python.py)** - Complete Python implementation  
-- **[Java](#java.java)** - Complete Java implementation
-- **[.NET/C#](dotnet.cs)** - Complete C# implementation
+- **[Java](java.java)** - Complete Java implementation
+- **[.NET/C#](csharp.cs)** - Complete C# implementation
 
 ## Java Maven Dependency
 
