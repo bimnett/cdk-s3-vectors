@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import { Template } from 'aws-cdk-lib/assertions';
+import { Match, Template } from 'aws-cdk-lib/assertions';
 import * as kms from 'aws-cdk-lib/aws-kms';
 import { Bucket, Index, KnowledgeBase } from '../src';
 
@@ -271,6 +271,56 @@ describe('S3 Vectors Constructs', () => {
             Action: 'bedrock:StartIngestionJob',
             Effect: 'Allow',
           }],
+        },
+      });
+    });
+
+    test('exposes the knowledge base IAM role', () => {
+      const kb = new KnowledgeBase(stack, 'TestKB', {
+        knowledgeBaseName: 'test-kb',
+        knowledgeBaseConfiguration: {
+          embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1',
+        },
+        vectorBucketArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket',
+        indexArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket/index/test-index',
+      });
+      
+      expect(kb.role).toBeInstanceOf(cdk.aws_iam.Role);
+    });
+
+    test('role has correct S3 and KMS permissions', () => {
+      new KnowledgeBase(stack, 'TestKB', {
+        knowledgeBaseName: 'test-kb',
+        knowledgeBaseConfiguration: {
+          embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1',
+        },
+        vectorBucketArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket',
+        indexArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket/index/test-index',
+      });
+
+      const template = Template.fromStack(stack);
+
+      template.hasResourceProperties('AWS::IAM::Policy', {
+        PolicyDocument: {
+          Statement: Match.arrayWith([
+            Match.objectLike({
+              Action: 's3vectors:*',
+              Effect: 'Allow',
+              Resource: Match.arrayWith([
+                'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket/index/test-index',
+                'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket',
+              ]),
+            }),
+            Match.objectLike({
+              Action: Match.arrayWith([
+                'kms:Decrypt',
+                'kms:GenerateDataKey',
+                'kms:DescribeKey',
+              ]),
+              Effect: 'Allow',
+              Resource: '*',
+            }),
+          ]),
         },
       });
     });
