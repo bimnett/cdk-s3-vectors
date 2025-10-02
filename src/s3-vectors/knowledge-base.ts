@@ -85,6 +85,10 @@ export class KnowledgeBase extends Construct {
     */
   public readonly knowledgeBaseArn: string;
 
+  /**
+   * The IAM role for the knowledge base.
+   */
+  public readonly role: iam.Role;
 
   /**
     * @summary Creates a new Bedrock knowledge base construct with S3 Vectors as the vector store.
@@ -105,17 +109,17 @@ export class KnowledgeBase extends Construct {
     const accountId = cdk.Stack.of(this).account;
     const constructedKnowledgeBaseArn = `arn:aws:bedrock:${region}:${accountId}:knowledge-base/*`;
 
-    const knowledgeBaseRole = new iam.Role(this, 'BedrockKnowledgeBaseRole', {
+    this.role = new iam.Role(this, 'BedrockKnowledgeBaseRole', {
       assumedBy: new iam.ServicePrincipal('bedrock.amazonaws.com'),
       description: `IAM role for Bedrock Knowledge Base ${props.knowledgeBaseName}`,
     });
 
-    knowledgeBaseRole.addToPolicy(new iam.PolicyStatement({
+    this.role.addToPolicy(new iam.PolicyStatement({
       actions: ['s3vectors:*'],
       resources: [props.indexArn, props.vectorBucketArn],
     }));
 
-    knowledgeBaseRole.addToPolicy(new iam.PolicyStatement({
+    this.role.addToPolicy(new iam.PolicyStatement({
       actions: [
         'kms:Decrypt',
         'kms:GenerateDataKey',
@@ -149,7 +153,7 @@ export class KnowledgeBase extends Construct {
       resources: [constructedKnowledgeBaseArn],
     }));
 
-    knowledgeBaseRole.grantAssumeRole(bedrockKnowledgeBaseHandler.grantPrincipal);
+    this.role.grantAssumeRole(bedrockKnowledgeBaseHandler.grantPrincipal);
 
     const bedrockKnowledgeBaseProvider = new custom_resources.Provider(this, 'BedrockKBProvider', {
       onEventHandler: bedrockKnowledgeBaseHandler,
@@ -161,7 +165,7 @@ export class KnowledgeBase extends Construct {
         knowledgeBaseName: props.knowledgeBaseName,
         description: props.description,
         clientToken: props.clientToken,
-        roleArn: knowledgeBaseRole.roleArn,
+        roleArn: this.role.roleArn,
         indexArn: props.indexArn,
         vectorBucketArn: props.vectorBucketArn,
         knowledgeBaseConfiguration: {

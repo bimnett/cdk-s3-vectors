@@ -1,5 +1,7 @@
 using Amazon.CDK;
 using Amazon.CDK.AWS.KMS;
+using Amazon.CDK.AWS.S3;
+using Amazon.CDK.AWS.Bedrock;
 using Constructs;
 using s3Vectors = bimnett.CdkS3Vectors;
 
@@ -9,9 +11,17 @@ namespace S3VectorsExample
     {
         internal S3VectorsStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {
+            // Create S3 bucket for storing documents
+            var documentBucket = new Bucket(this, "document-bucket", new BucketProps
+            {
+                EnforceSSL = true,
+                Versioned = false
+            });
+
             // Create KMS key for encryption (optional)
             var encryptionKey = new Key(this, "VectorBucketKey", new KeyProps
             {
+                
                 Description = "KMS key for S3 vector bucket encryption",
                 EnableKeyRotation = true
             });
@@ -42,6 +52,7 @@ namespace S3VectorsExample
                     NonFilterableMetadataKeys = new[] { "source", "timestamp", "category" }
                 }
             });
+            // REQUIRED - add dependency for vector index
             vectorIndex.Node.AddDependency(vectorBucket);
 
             // Create a knowledge base with all options
@@ -61,8 +72,27 @@ namespace S3VectorsExample
                 Description = "Knowledge base for vector similarity search using S3 Vectors",
                 ClientToken = "unique-client-token-12345678901234567890123456789012345" // Must be >= 33 characters
             });
+            // REQUIRED - add dependencies for knowledge base
             knowledgeBase.Node.AddDependency(vectorIndex);
             knowledgeBase.Node.AddDependency(vectorBucket);
+
+            // Create data source for knowledge base
+            var dataSource = new CfnDataSource(this, "data-source", new CfnDataSourceProps
+            {
+                Name = "my-data-source",
+                KnowledgeBaseId = knowledgeBase.KnowledgeBaseId,
+                DataSourceConfiguration = new CfnDataSource.DataSourceConfigurationProperty
+                {
+                    Type = "S3",
+                    S3Configuration = new CfnDataSource.S3DataSourceConfigurationProperty
+                    {
+                        BucketArn = documentBucket.BucketArn
+                    }
+                }
+            });
+
+            // Allow knowledge base to read from document bucket
+            documentBucket.GrantRead(knowledgeBase.Role);
         }
     }
 }
