@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - 10-fix-broken-release-workflow
   workflow_dispatch: {}
 concurrency:
   group: ${{ github.workflow }}
@@ -68,8 +69,8 @@ jobs:
           });
           fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
           "
-      - name: Package JS distribution
-        run: npx projen package:js
+      - name: Package all distributions
+        run: npx projen package-all
       - name: Check if version has already been tagged
         id: check_tag_exists
         run: |-
@@ -141,20 +142,6 @@ jobs:
       - name: Restore build artifact permissions
         run: cd dist && setfacl --restore=permissions-backup.acl
         continue-on-error: true
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          path: .repo
-      - name: Install Dependencies
-        run: cd .repo && yarn install --check-files --frozen-lockfile
-      - name: Extract build artifact
-        run: tar --strip-components=1 -xzvf dist/js/*.tgz -C .repo
-      - name: Move build artifact out of the way
-        run: mv dist dist.old
-      - name: Create js artifact
-        run: cd .repo && npx projen package:js
-      - name: Collect js artifact
-        run: mv .repo/dist dist
       - name: Release
         env:
           NPM_DIST_TAG: latest
@@ -170,9 +157,6 @@ jobs:
       contents: read
     if: needs.release.outputs.tag_exists != 'true' && needs.release.outputs.latest_commit == github.sha
     steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
@@ -184,21 +168,7 @@ jobs:
       - name: Restore build artifact permissions
         run: cd dist && setfacl --restore=permissions-backup.acl
         continue-on-error: true
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          path: .repo
-      - name: Install Dependencies
-        run: cd .repo && yarn install --check-files --frozen-lockfile
-      - name: Extract build artifact
-        run: tar --strip-components=1 -xzvf dist/js/*.tgz -C .repo
-      - name: Move build artifact out of the way
-        run: mv dist dist.old
-      - name: Create python artifact
-        run: cd .repo && npx projen package:python
-      - name: Collect python artifact
-        run: mv .repo/dist dist
-      - name: Release
+      - name: Release to PyPI
         env:
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
@@ -226,20 +196,6 @@ jobs:
       - name: Restore build artifact permissions
         run: cd dist && setfacl --restore=permissions-backup.acl
         continue-on-error: true
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          path: .repo
-      - name: Install Dependencies
-        run: cd .repo && yarn install --check-files --frozen-lockfile
-      - name: Extract build artifact
-        run: tar --strip-components=1 -xzvf dist/js/*.tgz -C .repo
-      - name: Move build artifact out of the way
-        run: mv dist dist.old
-      - name: Create java artifact
-        run: cd .repo && npx projen package:java
-      - name: Collect java artifact
-        run: mv .repo/dist dist
       - name: Import GPG key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
@@ -257,7 +213,7 @@ jobs:
       - name: Get version from dist
         id: get_version
         run: |
-          TAG=$(cat dist.old/releasetag.txt)
+          TAG=$(cat dist/releasetag.txt)
           VERSION=$(echo "$TAG" | sed 's/^v//')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
       - name: Upload and Publish to Sonatype
@@ -289,20 +245,6 @@ jobs:
       - name: Restore build artifact permissions
         run: cd dist && setfacl --restore=permissions-backup.acl
         continue-on-error: true
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          path: .repo
-      - name: Install Dependencies
-        run: cd .repo && yarn install --check-files --frozen-lockfile
-      - name: Extract build artifact
-        run: tar --strip-components=1 -xzvf dist/js/*.tgz -C .repo
-      - name: Move build artifact out of the way
-        run: mv dist dist.old
-      - name: Create dotnet artifact
-        run: cd .repo && npx projen package:dotnet
-      - name: Collect dotnet artifact
-        run: mv .repo/dist dist
       - name: Release
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
