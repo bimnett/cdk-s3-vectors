@@ -128,6 +128,11 @@ export class KnowledgeBase extends Construct {
       resources: ['*'],
     }));
 
+    this.role.addToPolicy(new iam.PolicyStatement({
+      actions: ['bedrock:InvokeModel'],
+      resources: [props.knowledgeBaseConfiguration.embeddingModelArn]
+    }));
+
     const bedrockKnowledgeBaseHandler = new lambda.Function(this, 'BedrockKBHandler', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 's3-vectors-create-kb.handler',
