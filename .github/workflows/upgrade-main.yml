@@ -26,15 +26,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --check-files --frozen-lockfile
       - name: Upgrade dependencies
-        run: npx npm-check-updates --upgrade --target=minor --peer --dep=dev,peer,prod,optional
-      - name: Align dependencies
-        run: |
-          for dep in aws-cdk-lib constructs; do
-            VERSION=$(node -p "require('./package.json').peerDependencies['$dep']")
-            CLEAN_VERSION=$(echo "$VERSION" | tr -d '^~')
-            sed -i "s/\"$dep\": \"[^\"]*\"/\"$dep\": \"$CLEAN_VERSION\"/" package.json
-          done
-        shell: bash
+        run: npx npm-check-updates --upgrade --target=minor --dep=dev,prod
       - name: Install updated dependencies
         run: yarn install
       - name: Run compile
