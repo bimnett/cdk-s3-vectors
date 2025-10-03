@@ -29,6 +29,8 @@ jobs:
         run: npx npm-check-updates --upgrade --target=minor --peer --dep=dev,peer,prod,optional
       - name: Install updated dependencies
         run: yarn install
+      - name: Run compile
+        run: npx projen compile
       - name: Check for changes and create patch
         id: create_patch
         run: |
