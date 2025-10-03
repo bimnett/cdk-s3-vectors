@@ -1,7 +1,8 @@
 name: upgrade-main
 on:
   push:
-    - adjust-upgrade-main-workflow
+    branches:
+      - adjust-upgrade-main-workflow
   workflow_dispatch: {}
   schedule:
     - cron: 0 0 * * *
