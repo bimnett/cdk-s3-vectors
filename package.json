@@ -17,10 +17,7 @@
     "eslint": "npx projen eslint",
     "package": "npx projen package",
     "package-all": "npx projen package-all",
-    "package:dotnet": "npx projen package:dotnet",
-    "package:java": "npx projen package:java",
     "package:js": "npx projen package:js",
-    "package:python": "npx projen package:python",
     "post-compile": "npx projen post-compile",
     "post-upgrade": "npx projen post-upgrade",
     "pre-compile": "npx projen pre-compile",
@@ -40,7 +37,7 @@
   "devDependencies": {
     "@stylistic/eslint-plugin": "^2",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.3.0",
+    "@types/node": "^24.6.2",
     "@typescript-eslint/eslint-plugin": "^8",
     "@typescript-eslint/parser": "^8",
     "aws-cdk-lib": "2.205.0",
@@ -49,25 +46,25 @@
     "eslint": "^9",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
-    "jest": "^30.1.1",
+    "jest": "^30.2.0",
     "jest-junit": "^16",
     "jsii": "~5.8.0",
-    "jsii-diff": "^1.113.0",
+    "jsii-diff": "^1.115.0",
     "jsii-docgen": "^10.5.0",
-    "jsii-pacmak": "^1.113.0",
+    "jsii-pacmak": "^1.115.0",
     "jsii-rosetta": "~5.8.0",
-    "projen": "^0.95.2",
-    "ts-jest": "^29.4.1",
+    "projen": "^0.97.0",
+    "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "aws-cdk-lib": "^2.205.0",
     "constructs": "^10.0.5"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-agent": "^3.876.0",
-    "@aws-sdk/client-s3vectors": "^3.876.0",
+    "@aws-sdk/client-bedrock-agent": "^3.901.0",
+    "@aws-sdk/client-s3vectors": "^3.901.0",
     "uuid": "^10.0.0"
   },
   "bundledDependencies": [
@@ -138,23 +135,7 @@
   "stability": "stable",
   "jsii": {
     "outdir": "dist",
-    "targets": {
-      "java": {
-        "package": "io.github.bimnett.cdks3vectors",
-        "maven": {
-          "groupId": "io.github.bimnett",
-          "artifactId": "cdk-s3-vectors"
-        }
-      },
-      "python": {
-        "distName": "cdk-s3-vectors",
-        "module": "cdk_s3_vectors"
-      },
-      "dotnet": {
-        "namespace": "bimnett.CdkS3Vectors",
-        "packageId": "bimnett.CdkS3Vectors"
-      }
-    },
+    "targets": {},
     "tsc": {
       "outDir": "lib",
       "rootDir": "src"
