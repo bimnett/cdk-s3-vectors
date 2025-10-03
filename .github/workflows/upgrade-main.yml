@@ -1,8 +1,5 @@
 name: upgrade-main
 on:
-  push:
-    branches:
-      - adjust-upgrade-main-workflow
   workflow_dispatch: {}
   schedule:
     - cron: 0 0 * * *
@@ -41,7 +38,7 @@ jobs:
         run: npx projen compile
       - name: Check for changes and create patch
         id: create_patch
-        run: |
+        run: |-
           git add .
           git diff --staged --patch --exit-code > repo.patch || echo "patch_created=true" >> $GITHUB_OUTPUT
         shell: bash
