@@ -66,6 +66,11 @@ export interface KnowledgeBaseConfiguration {
     * Must be supported by the chosen embedding model.
     */
   readonly dimensions?: string;
+
+  /**
+    * Multi model storage resource uri. Must be an S3 URI.
+    */
+  readonly supplementalDataS3Uri?: string;
 }
 
 /**
