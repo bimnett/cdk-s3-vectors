@@ -68,10 +68,21 @@ export interface KnowledgeBaseConfiguration {
   readonly dimensions?: string;
 
   /**
-    * Multi model storage resource uri. Must be an S3 URI.
+    * Multi model supplemental data storage configuration
+    * 
+    * See https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_SupplementalDataStorageConfiguration.html.
     */
-  readonly supplementalDataS3Uri?: string;
+  readonly supplementalDataStorageConfiguration?: SupplementalDataStorageConfiguration;
 }
+
+
+export interface SupplementalDataStorageConfiguration {
+  /**
+    * The S3 URI for the supplemental data storage.
+    */
+  readonly s3Location: string;
+}
+
 
 /**
  * Creates a Amazon Bedrock knowledge base with S3 Vectors as the underlying vector store.

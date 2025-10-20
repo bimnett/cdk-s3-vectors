@@ -42,10 +42,15 @@ exports.handler = async (event, context) => {
     if (event.ResourceProperties.clientToken) {
       createParams.clientToken = event.ResourceProperties.clientToken;
     }
-    if (event.ResourceProperties.knowledgeBaseConfiguration.supplementalDataS3Uri) {
-        createParams.knowledgeBaseConfiguration.vectorKnowledgeBaseConfiguration.knowledgeBaseConfiguration.supplementalDataStorageConfiguration = {
+    if (event.ResourceProperties.knowledgeBaseConfiguration.supplementalDataStorageConfiguration) {
+        createParams.knowledgeBaseConfiguration.vectorKnowledgeBaseConfiguration.supplementalDataStorageConfiguration = {
             storageLocations: [
-              { type: 'S3', s3Location: {uri: event.ResourceProperties.knowledgeBaseConfiguration.supplementalDataS3Uri }}
+              { 
+                type: 'S3', 
+                s3Location: {
+                  uri: event.ResourceProperties.knowledgeBaseConfiguration.supplementalDataStorageConfiguration.s3Location,
+                },
+              }
             ]
           }
     }
