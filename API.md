@@ -683,6 +683,7 @@ const knowledgeBaseConfiguration: KnowledgeBaseConfiguration = { ... }
 | <code><a href="#cdk-s3-vectors.KnowledgeBaseConfiguration.property.embeddingModelArn">embeddingModelArn</a></code> | <code>string</code> | The ARN (Amazon Resource Name) of the model used to create vector embeddings for the knowledge base. |
 | <code><a href="#cdk-s3-vectors.KnowledgeBaseConfiguration.property.dimensions">dimensions</a></code> | <code>string</code> | The dimensions details for the vector configuration used on the Bedrock embeddings model. |
 | <code><a href="#cdk-s3-vectors.KnowledgeBaseConfiguration.property.embeddingDataType">embeddingDataType</a></code> | <code>string</code> | The data type for the vectors when using a model to convert text into vector embeddings. |
+| <code><a href="#cdk-s3-vectors.KnowledgeBaseConfiguration.property.supplementalDataStorageConfiguration">supplementalDataStorageConfiguration</a></code> | <code><a href="#cdk-s3-vectors.SupplementalDataStorageConfiguration">SupplementalDataStorageConfiguration</a></code> | Multi model supplemental data storage configuration. |
 
 ---
 
@@ -727,6 +728,20 @@ The model must support the specified data type for vector embeddings.
 Floating-point (float32) is the default data type, and is supported by most models for vector embeddings.
 See [Supported embeddings models](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-supported.html)
 for information on the available models and their vector data types.
+
+---
+
+##### `supplementalDataStorageConfiguration`<sup>Optional</sup> <a name="supplementalDataStorageConfiguration" id="cdk-s3-vectors.KnowledgeBaseConfiguration.property.supplementalDataStorageConfiguration"></a>
+
+```typescript
+public readonly supplementalDataStorageConfiguration: SupplementalDataStorageConfiguration;
+```
+
+- *Type:* <a href="#cdk-s3-vectors.SupplementalDataStorageConfiguration">SupplementalDataStorageConfiguration</a>
+
+Multi model supplemental data storage configuration.
+
+See https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_SupplementalDataStorageConfiguration.html.
 
 ---
 
@@ -870,6 +885,36 @@ For more information about non-filterable metadata keys, see
 [Vectors](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-vectors.html) and
 [Limitations and restrictions](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-limitations.html)
 in the *Amazon S3 User Guide*.
+
+---
+
+### SupplementalDataStorageConfiguration <a name="SupplementalDataStorageConfiguration" id="cdk-s3-vectors.SupplementalDataStorageConfiguration"></a>
+
+#### Initializer <a name="Initializer" id="cdk-s3-vectors.SupplementalDataStorageConfiguration.Initializer"></a>
+
+```typescript
+import { SupplementalDataStorageConfiguration } from 'cdk-s3-vectors'
+
+const supplementalDataStorageConfiguration: SupplementalDataStorageConfiguration = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-s3-vectors.SupplementalDataStorageConfiguration.property.s3Location">s3Location</a></code> | <code>string</code> | The S3 URI for the supplemental data storage. |
+
+---
+
+##### `s3Location`<sup>Required</sup> <a name="s3Location" id="cdk-s3-vectors.SupplementalDataStorageConfiguration.property.s3Location"></a>
+
+```typescript
+public readonly s3Location: string;
+```
+
+- *Type:* string
+
+The S3 URI for the supplemental data storage.
 
 ---
 

@@ -284,7 +284,7 @@ describe('S3 Vectors Constructs', () => {
         vectorBucketArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket',
         indexArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket/index/test-index',
       });
-      
+
       expect(kb.role).toBeInstanceOf(cdk.aws_iam.Role);
     });
 

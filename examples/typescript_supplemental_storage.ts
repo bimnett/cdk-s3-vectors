@@ -13,25 +13,25 @@ export class S3VectorsStack extends Stack {
 
     const embeddingModel = bedrock.FoundationModel.fromFoundationModelId(
       this,
-      "EmbeddingModel",
+      'EmbeddingModel',
       bedrock.FoundationModelIdentifier.AMAZON_TITAN_EMBED_TEXT_V2_0,
     );
 
     const parsingModel = bedrock.FoundationModel.fromFoundationModelId(
       this,
-      "ParsingModel",
+      'ParsingModel',
       bedrock.FoundationModelIdentifier
         .ANTHROPIC_CLAUDE_3_5_SONNET_20240620_V1_0,
     );
 
 
     // Create S3 bucket for storing documents
-    const documentBucket = new s3.Bucket(this, 'document-bucket', {
+    const documentBucket = new s3.Bucket(this, 'DocumentBucket', {
       enforceSSL: true,
       versioned: false
     });
 
-    const supplementalBucket = new s3.Bucket(this, "SupplementalBucket", {
+    const supplementalBucket = new s3.Bucket(this, 'SupplementalBucket', {
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       enforceSSL: true,
@@ -85,7 +85,7 @@ export class S3VectorsStack extends Stack {
       indexArn: vectorIndex.indexArn, // REQUIRED
       // REQUIRED knowledge base configuration
       knowledgeBaseConfiguration: {
-        embeddingModelArn:  embeddingModel.modelArn,
+        embeddingModelArn: embeddingModel.modelArn,
         embeddingDataType: 'FLOAT32', // Optional: 'BINARY' | 'FLOAT32'
         dimensions: '1024', // Optional: dimensions as string
         supplementalDataStorageConfiguration: {
@@ -109,7 +109,7 @@ export class S3VectorsStack extends Stack {
     supplementalBucket.grantReadWrite(knowledgeBase.role!);
 
     // Create data source for knowledge base
-    const dataSource = new bedrock.CfnDataSource(this, "KnowledgeBaseDataSource", {
+    new bedrock.CfnDataSource(this, 'KnowledgeBaseDataSource', {
       name: 'my-data-source',
       knowledgeBaseId: knowledgeBase.knowledgeBaseId,
       dataSourceConfiguration: {
@@ -120,7 +120,7 @@ export class S3VectorsStack extends Stack {
       },
       vectorIngestionConfiguration: {
         parsingConfiguration: {
-          parsingStrategy: "BEDROCK_FOUNDATION_MODEL",
+          parsingStrategy: 'BEDROCK_FOUNDATION_MODEL',
           bedrockFoundationModelConfiguration: {
             modelArn: parsingModel.modelArn,
           },

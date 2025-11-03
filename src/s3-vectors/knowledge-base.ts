@@ -69,7 +69,7 @@ export interface KnowledgeBaseConfiguration {
 
   /**
     * Multi model supplemental data storage configuration
-    * 
+    *
     * See https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_SupplementalDataStorageConfiguration.html.
     */
   readonly supplementalDataStorageConfiguration?: SupplementalDataStorageConfiguration;
@@ -146,7 +146,7 @@ export class KnowledgeBase extends Construct {
 
     this.role.addToPolicy(new iam.PolicyStatement({
       actions: ['bedrock:InvokeModel'],
-      resources: [props.knowledgeBaseConfiguration.embeddingModelArn]
+      resources: [props.knowledgeBaseConfiguration.embeddingModelArn],
     }));
 
     const bedrockKnowledgeBaseHandler = new lambda.Function(this, 'BedrockKBHandler', {
