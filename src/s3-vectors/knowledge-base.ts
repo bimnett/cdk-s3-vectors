@@ -193,6 +193,7 @@ export class KnowledgeBase extends Construct {
           embeddingDataType: props.knowledgeBaseConfiguration.embeddingDataType,
           dimensions: props.knowledgeBaseConfiguration.dimensions,
           embeddingModelArn: props.knowledgeBaseConfiguration.embeddingModelArn,
+          supplementalDataStorageConfiguration: props.knowledgeBaseConfiguration.supplementalDataStorageConfiguration,
         },
       },
     });
