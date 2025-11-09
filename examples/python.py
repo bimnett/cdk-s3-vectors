@@ -13,7 +13,14 @@ class S3VectorsStack(Stack):
 
         # Create S3 bucket for storing documents
         document_bucket = s3.Bucket(
-            self, "document-bucket",
+            self, "DocumentBucket", # Renamed ID to PascalCase for convention
+            enforce_ssl=True,
+            versioned=False
+        )
+
+        # Create S3 bucket for storing supplemental data
+        supplemental_data_bucket = s3.Bucket(
+            self, "SupplementalDataBucket", # Renamed ID to PascalCase for convention
             enforce_ssl=True,
             versioned=False
         )
@@ -60,7 +67,11 @@ class S3VectorsStack(Stack):
             knowledge_base_configuration={
                 "embeddingModelArn": "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0",  # REQUIRED
                 "embeddingDataType": "FLOAT32",  # Optional: 'BINARY' | 'FLOAT32'
-                "dimensions": "1024"  # Optional: dimensions as string
+                "dimensions": "1024",  # Optional: dimensions as string
+                # Supplemental Data Configuration
+                "supplementalDataStorageConfiguration": {
+                    "s3Location": f"s3://{supplemental_data_bucket.bucket_name}"
+                },
             },
             # Optional fields
             description="Knowledge base for vector similarity search using S3 Vectors",
@@ -69,10 +80,12 @@ class S3VectorsStack(Stack):
         # REQUIRED - add dependencies for knowledge base
         knowledge_base.node.add_dependency(vector_index)
         knowledge_base.node.add_dependency(vector_bucket)
+        # Add dependency for supplemental data bucket
+        knowledge_base.node.add_dependency(supplemental_data_bucket)
 
         # Create data source for knowledge base
         data_source = bedrock.CfnDataSource(
-            self, "data-source",
+            self, "DataSource", # Renamed ID to PascalCase for convention
             name="my-data-source",
             knowledge_base_id=knowledge_base.knowledge_base_id,
             data_source_configuration={
@@ -83,5 +96,12 @@ class S3VectorsStack(Stack):
             }
         )
 
+        # Add dependencies for data source
+        data_source.node.add_dependency(knowledge_base)
+        data_source.node.add_dependency(document_bucket)
+
+
         # Allow knowledge base to read from document bucket
         document_bucket.grant_read(knowledge_base.role)
+        # Grant ReadWrite permission to supplemental data bucket
+        supplemental_data_bucket.grant_read_write(knowledge_base.role)

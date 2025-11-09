@@ -9,12 +9,18 @@ import io.github.bimnett.cdks3vectors.*;
 import java.util.List;
 import java.util.Map;
 
-public class S3VectorsStack extends Stack {
-    public S3VectorsStack(final Construct scope, final String id, final StackProps props) {
+public class java extends Stack {
+    public java(final Construct scope, final String id, final StackProps props) {
         super(scope, id, props);
 
         // Create S3 bucket for storing documents
-        Bucket documentBucket = Bucket.Builder.create(this, "document-bucket")
+        Bucket documentBucket = Bucket.Builder.create(this, "DocumentBucket")
+                .enforceSsl(true)
+                .versioned(false)
+                .build();
+
+        // Create S3 bucket for storing supplemental data
+        Bucket supplementalDataBucket = Bucket.Builder.create(this, "SupplementalDataBucket")
                 .enforceSsl(true)
                 .versioned(false)
                 .build();
@@ -26,7 +32,8 @@ public class S3VectorsStack extends Stack {
                 .build();
 
         // Create a vector bucket with all options
-        Bucket_ vectorBucket = Bucket_.Builder.create(this, "VectorBucket") // renamed to avoid collision with s3.Bucket
+        // Renamed to 'S3VectorsBucket' to avoid collision with s3.Bucket
+        Bucket_ vectorBucket = Bucket_.Builder.create(this, "VectorBucket") 
                 .vectorBucketName("my-vector-bucket") // REQUIRED
                 .encryptionConfiguration(Map.of(
                         "sseType", "aws:kms",  // 'AES256' | 'aws:kms'
@@ -57,7 +64,11 @@ public class S3VectorsStack extends Stack {
                 .knowledgeBaseConfiguration(Map.of(
                         "embeddingModelArn", "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0", // REQUIRED
                         "embeddingDataType", "FLOAT32", // Optional: 'BINARY' | 'FLOAT32'
-                        "dimensions", "1024" // Optional: dimensions as string
+                        "dimensions", "1024", // Optional: dimensions as string
+                        // Supplemental Data Configuration
+                        "supplementalDataStorageConfiguration", Map.of( 
+                            "s3Location", "s3://" + supplementalDataBucket.getBucketName()
+                        )
                 ))
                 .description("Knowledge base for vector similarity search using S3 Vectors")
                 .clientToken("unique-client-token-12345678901234567890123456789012345") // Must be >= 33 characters
@@ -66,9 +77,11 @@ public class S3VectorsStack extends Stack {
         // REQUIRED - add dependencies for knowledge base
         knowledgeBase.getNode().addDependency(vectorIndex);
         knowledgeBase.getNode().addDependency(vectorBucket);
+        // Add dependency for supplemental data bucket
+        knowledgeBase.getNode().addDependency(supplementalDataBucket); 
 
         // Create data source for knowledge base
-        CfnDataSource dataSource = CfnDataSource.Builder.create(this, "data-source")
+        CfnDataSource dataSource = CfnDataSource.Builder.create(this, "DataSource")
                 .name("my-data-source")
                 .knowledgeBaseId(knowledgeBase.getKnowledgeBaseId())
                 .dataSourceConfiguration(Map.of(
@@ -78,8 +91,14 @@ public class S3VectorsStack extends Stack {
                         )
                 ))
                 .build();
+        
+        // **MISSING ELEMENT #5: Add dependencies for data source**
+        dataSource.getNode().addDependency(knowledgeBase);
+        dataSource.getNode().addDependency(documentBucket);
 
         // Allow knowledge base to read from document bucket
         documentBucket.grantRead(knowledgeBase.getRole());
+        // Grant ReadWrite permission to supplemental data bucket
+        supplementalDataBucket.grantReadWrite(knowledgeBase.getRole());
     }
 }

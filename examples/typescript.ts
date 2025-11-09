@@ -15,6 +15,12 @@ export class S3VectorsStack extends Stack {
       versioned: false
     });
 
+    // Create S3 bucket for storing supplemental data
+    const supplementalDataBucket = new s3.Bucket(this, 'supplemental-data-bucket', {
+      enforceSSL: true,
+      versioned: false
+    });
+
     // Create KMS key for encryption (optional)
     const encryptionKey = new kms.Key(this, 'VectorBucketKey', {
       description: 'KMS key for S3 vector bucket encryption',
@@ -56,6 +62,9 @@ export class S3VectorsStack extends Stack {
         embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0', // REQUIRED
         embeddingDataType: 'FLOAT32', // Optional: 'BINARY' | 'FLOAT32'
         dimensions: '1024', // Optional: dimensions as string
+        supplementalDataStorageConfiguration: { // Optional: configuration for supplemental data storage
+          s3Location: `s3://${supplementalDataBucket.bucketName}`
+        },
       },
       // Optional fields
       description: 'Knowledge base for vector similarity search using S3 Vectors',
@@ -64,6 +73,11 @@ export class S3VectorsStack extends Stack {
     // REQUIRED - add dependencies for knowledge base
     knowledgeBase.node.addDependency(vectorIndex);
     knowledgeBase.node.addDependency(vectorBucket);
+    knowledgeBase.node.addDependency(supplementalDataBucket);
+
+    // Allow knowledge base to read from S3 buckets
+    documentBucket.grantRead(knowledgeBase.role);
+    supplementalDataBucket.grantReadWrite(knowledgeBase.role);
 
     // Create data source for knowledge base
     const dataSource = new bedrock.CfnDataSource(this, "data-source", {
@@ -76,8 +90,8 @@ export class S3VectorsStack extends Stack {
         }
       }
     });
-
-    // Allow knowledge base to read from document bucket
-    documentBucket.grantRead(knowledgeBase.role);
+    // REQUIRED - add dependencies for data source
+    dataSource.node.addDependency(knowledgeBase);
+    dataSource.node.addDependency(documentBucket);
   }
 }
