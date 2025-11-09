@@ -235,6 +235,29 @@ describe('S3 Vectors Constructs', () => {
       });
     });
 
+    test('creates knowledge base with supplemental data storage configuration', () => {
+      new KnowledgeBase(stack, 'TestKB', {
+        knowledgeBaseName: 'test-kb',
+        knowledgeBaseConfiguration: {
+          embeddingModelArn: 'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1',
+          supplementalDataStorageConfiguration: {
+            s3Location: 's3://my-supplemental-bucket/my-prefix/',
+          },
+        },
+        vectorBucketArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket',
+        indexArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket/index/test-index',
+      });
+
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties('AWS::CloudFormation::CustomResource', {
+        knowledgeBaseConfiguration: {
+          supplementalDataStorageConfiguration: {
+            s3Location: 's3://my-supplemental-bucket/my-prefix/',
+          },
+        },
+      });
+    });
+
     test('throws error for short client token', () => {
       expect(() => {
         new KnowledgeBase(stack, 'TestKB', {
@@ -284,7 +307,7 @@ describe('S3 Vectors Constructs', () => {
         vectorBucketArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket',
         indexArn: 'arn:aws:s3vectors:us-east-1:123456789012:bucket/test-bucket/index/test-index',
       });
-      
+
       expect(kb.role).toBeInstanceOf(cdk.aws_iam.Role);
     });
 

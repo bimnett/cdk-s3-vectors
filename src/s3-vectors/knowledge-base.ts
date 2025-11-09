@@ -66,7 +66,23 @@ export interface KnowledgeBaseConfiguration {
     * Must be supported by the chosen embedding model.
     */
   readonly dimensions?: string;
+
+  /**
+    * Multi model supplemental data storage configuration
+    *
+    * See https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_SupplementalDataStorageConfiguration.html.
+    */
+  readonly supplementalDataStorageConfiguration?: SupplementalDataStorageConfiguration;
 }
+
+
+export interface SupplementalDataStorageConfiguration {
+  /**
+    * The S3 URI for the supplemental data storage.
+    */
+  readonly s3Location: string;
+}
+
 
 /**
  * Creates a Amazon Bedrock knowledge base with S3 Vectors as the underlying vector store.
@@ -130,7 +146,7 @@ export class KnowledgeBase extends Construct {
 
     this.role.addToPolicy(new iam.PolicyStatement({
       actions: ['bedrock:InvokeModel'],
-      resources: [props.knowledgeBaseConfiguration.embeddingModelArn]
+      resources: [props.knowledgeBaseConfiguration.embeddingModelArn],
     }));
 
     const bedrockKnowledgeBaseHandler = new lambda.Function(this, 'BedrockKBHandler', {
@@ -177,6 +193,7 @@ export class KnowledgeBase extends Construct {
           embeddingDataType: props.knowledgeBaseConfiguration.embeddingDataType,
           dimensions: props.knowledgeBaseConfiguration.dimensions,
           embeddingModelArn: props.knowledgeBaseConfiguration.embeddingModelArn,
+          supplementalDataStorageConfiguration: props.knowledgeBaseConfiguration.supplementalDataStorageConfiguration,
         },
       },
     });

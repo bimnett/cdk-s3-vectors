@@ -42,7 +42,18 @@ exports.handler = async (event, context) => {
     if (event.ResourceProperties.clientToken) {
       createParams.clientToken = event.ResourceProperties.clientToken;
     }
-
+    if (event.ResourceProperties.knowledgeBaseConfiguration.supplementalDataStorageConfiguration) {
+        createParams.knowledgeBaseConfiguration.vectorKnowledgeBaseConfiguration.supplementalDataStorageConfiguration = {
+            storageLocations: [
+              { 
+                type: 'S3', 
+                s3Location: {
+                  uri: event.ResourceProperties.knowledgeBaseConfiguration.supplementalDataStorageConfiguration.s3Location,
+                },
+              }
+            ]
+          }
+    }
     try {
       const command = new CreateKnowledgeBaseCommand(createParams);
       const createResponse = await client.send(command);

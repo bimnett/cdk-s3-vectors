@@ -12,7 +12,14 @@ namespace S3VectorsExample
         internal S3VectorsStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {
             // Create S3 bucket for storing documents
-            var documentBucket = new Bucket(this, "document-bucket", new BucketProps
+            var documentBucket = new Bucket(this, "DocumentBucket", new BucketProps
+            {
+                EnforceSSL = true,
+                Versioned = false
+            });
+
+            // **MISSING ELEMENT #1: Create S3 bucket for storing supplemental data**
+            var supplementalDataBucket = new Bucket(this, "SupplementalDataBucket", new BucketProps
             {
                 EnforceSSL = true,
                 Versioned = false
@@ -21,7 +28,6 @@ namespace S3VectorsExample
             // Create KMS key for encryption (optional)
             var encryptionKey = new Key(this, "VectorBucketKey", new KeyProps
             {
-                
                 Description = "KMS key for S3 vector bucket encryption",
                 EnableKeyRotation = true
             });
@@ -66,18 +72,27 @@ namespace S3VectorsExample
                 {
                     EmbeddingModelArn = "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0", // REQUIRED
                     EmbeddingDataType = "FLOAT32", // Optional: 'BINARY' | 'FLOAT32'
-                    Dimensions = "1024" // Optional: dimensions as string
+                    Dimensions = "1024", // Optional: dimensions as string
+                    // Supplemental Data Configuration
+                    SupplementalDataStorageConfiguration = new s3Vectors.SupplementalDataStorageConfiguration
+                    {
+                        S3Location = $"s3://{supplementalDataBucket.BucketName}"
+                    }
                 },
                 // Optional fields
                 Description = "Knowledge base for vector similarity search using S3 Vectors",
                 ClientToken = "unique-client-token-12345678901234567890123456789012345" // Must be >= 33 characters
             });
+            
             // REQUIRED - add dependencies for knowledge base
             knowledgeBase.Node.AddDependency(vectorIndex);
             knowledgeBase.Node.AddDependency(vectorBucket);
+            // **MISSING ELEMENT #3: Add dependency for supplemental data bucket**
+            knowledgeBase.Node.AddDependency(supplementalDataBucket);
+
 
             // Create data source for knowledge base
-            var dataSource = new CfnDataSource(this, "data-source", new CfnDataSourceProps
+            var dataSource = new CfnDataSource(this, "DataSource", new CfnDataSourceProps
             {
                 Name = "my-data-source",
                 KnowledgeBaseId = knowledgeBase.KnowledgeBaseId,
@@ -91,8 +106,14 @@ namespace S3VectorsExample
                 }
             });
 
-            // Allow knowledge base to read from document bucket
+            // Add dependencies for data source
+            dataSource.Node.AddDependency(knowledgeBase);
+            dataSource.Node.AddDependency(documentBucket);
+
+            // Allow knowledge base to read from S3 buckets
             documentBucket.GrantRead(knowledgeBase.Role);
+            // Grant ReadWrite permission to supplemental data bucket
+            supplementalDataBucket.GrantReadWrite(knowledgeBase.Role);
         }
     }
 }
