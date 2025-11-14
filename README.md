@@ -40,22 +40,6 @@ For Java, add the following to your `pom.xml` file:
   <version>LATEST</version>
 </dependency>
 ```
-## Getting Started
-
-| Language | Package |
-|----------|---------|
-| ![Python Logo](https://docs.aws.amazon.com/cdk/api/latest/img/python32.png) Python | `pip install cdk-s3-vectors` |
-| ![TypeScript Logo](https://docs.aws.amazon.com/cdk/api/latest/img/typescript32.png) TypeScript/JavaScript | `npm install cdk-s3-vectors` |
-| ![.NET Logo](https://docs.aws.amazon.com/cdk/api/latest/img/dotnet32.png) .NET | `dotnet add package bimnett.CdkS3Vectors` |
-
-For Java, add the following to your `pom.xml` file:
-```xml
-<dependency>
-  <groupId>io.github.bimnett</groupId>
-  <artifactId>cdk-s3-vectors</artifactId>
-  <version>LATEST</version>
-</dependency>
-```
 
 ## Examples
 For complete, deployable examples in all supported languages, see the [examples directory](examples/).
