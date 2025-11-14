@@ -53,23 +53,34 @@ The API reference can be found [here](./API.md).
 ```mermaid
 graph TD
     subgraph "CDK Application"
-        A[Bucket Construct] --> B(S3 Vector Bucket)
-        C[Index Construct] --> D(S3 Vector Index)
-        E[KnowledgeBase Construct] --> F(Bedrock Knowledge Base)
+        A[Bucket Construct]
+        C[Index Construct]
+        E[KnowledgeBase Construct]
     end
 
-    subgraph "AWS Cloud"
-        A -- defines --> G{Lambda}
-        C -- defines --> G
-        E -- defines --> G
-        G -- uses --> H{S3 Vectors}
-        G -- uses --> I{Bedrock}
-        H --> J(Embedding Model)
+    subgraph "AWS Cloud<br>"
+        CR[CloudFormation<br>Custom Resources]
+        G[Lambda Function]
+        H[S3 Vectors API]
+        I[Bedrock API]
+        
+        B[S3 Vector Bucket]
+        D[S3 Vector Index]
+        F[Bedrock Knowledge Base]
     end
 
-    G -- creates --> B
-    G -- creates --> D
-    G -- creates --> F
+    A -- defines --> CR
+    C -- defines --> CR
+    E -- defines --> CR
+
+    CR -- invokes --> G
+    
+    G -- calls --> H
+    G -- calls --> I
+
+    H -- creates --> B
+    H -- creates --> D
+    I -- creates --> F
 ```
 
 ## License
