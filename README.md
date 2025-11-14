@@ -10,17 +10,7 @@
 > **⚠️ Maintenance Notice**: This library is intended as a temporary solution and will only be maintained until AWS CloudFormation and CDK introduce native support for Amazon S3 Vectors. Once native support is available, users are encouraged to migrate to the official AWS constructs.
 
 ## Reference Documentation
-
 [Amazon S3 Vectors User Guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors.html)
-
-## Supported Languages
-
-| Language | Package |
-|----------|---------|
-| ![Python Logo](https://docs.aws.amazon.com/cdk/api/latest/img/python32.png) Python | `cdk-s3-vectors` |
-| ![TypeScript Logo](https://docs.aws.amazon.com/cdk/api/latest/img/typescript32.png) TypeScript | `cdk-s3-vectors` |
-| ![Java Logo](https://docs.aws.amazon.com/cdk/api/latest/img/java32.png) Java | `io.github.bimnett:cdk-s3-vectors` |
-| ![.NET Logo](https://docs.aws.amazon.com/cdk/api/latest/img/dotnet32.png) .NET | `bimnett.CdkS3Vectors` |
 
 ## Overview
 
@@ -34,79 +24,53 @@ The library includes three main constructs:
 - **Index**: Creates vector indexes within buckets for similarity search
 - **KnowledgeBase**: Creates Amazon Bedrock knowledge bases using S3 Vectors as the vector store
 
-**IMPORTANT:** The `constructs` library version must be >= 10.0.5.
+## Getting Started
+
+| Language | Package |
+|----------|---------|
+| ![Python Logo](https://docs.aws.amazon.com/cdk/api/latest/img/python32.png) Python | `pip install cdk-s3-vectors` |
+| ![TypeScript Logo](https://docs.aws.amazon.com/cdk/api/latest/img/typescript32.png) TypeScript/JavaScript | `npm install cdk-s3-vectors` |
+| ![.NET Logo](https://docs.aws.amazon.com/cdk/api/latest/img/dotnet32.png) .NET | `dotnet add package bimnett.CdkS3Vectors` |
+
+For Java, add the following to your `pom.xml` file:
+```xml
+<dependency>
+  <groupId>io.github.bimnett</groupId>
+  <artifactId>cdk-s3-vectors</artifactId>
+  <version>LATEST</version>
+</dependency>
+```
 
 ## Examples
-
 For complete, deployable examples in all supported languages, see the [examples directory](examples/).
 
-## Bucket Construct Props
+## API Reference
+The API reference can be found [here](./API.md).
 
-| Name | Type | Description |
-|------|------|-------------|
-| `vectorBucketName` | `string` | The name of the vector bucket to create. |
-| `encryptionConfiguration?` | `EncryptionConfiguration` | Optional encryption configuration for the vector bucket. Defaults to AES256. |
-
-## Index Construct Props
-
-| Name | Type | Description |
-|------|------|-------------|
-| `vectorBucketName` | `string` | The name of the vector bucket to create the index in. |
-| `indexName` | `string` | The name of the vector index to create. |
-| `dataType` | `'float32'` | The data type of the vectors in the index. |
-| `dimension` | `number` | The dimensions of the vectors (1-4096). |
-| `distanceMetric` | `'euclidean' \| 'cosine'` | The distance metric for similarity search. |
-| `metadataConfiguration?` | `MetadataConfiguration` | Optional metadata configuration for the index. |
-
-## KnowledgeBase Construct Props
-
-| Name | Type | Description |
-|------|------|-------------|
-| `knowledgeBaseName` | `string` | The name of the knowledge base to create. |
-| `knowledgeBaseConfiguration` | `KnowledgeBaseConfiguration` | Vector embeddings configuration details. |
-| `vectorBucketArn` | `string` | The ARN of the S3 vector bucket. |
-| `indexArn` | `string` | The ARN of the vector index. |
-| `description?` | `string` | Optional description of the knowledge base. |
-| `clientToken?` | `string` | Optional idempotency token (≥33 characters). |
-
-## Pattern Properties
-
-| Name | Type | Description |
-|------|------|-------------|
-| `vectorBucketName` | `string` | Returns the name of the created vector bucket |
-| `vectorBucketArn` | `string` | Returns the ARN of the created vector bucket |
-| `indexArn` | `string` | Returns the ARN of the created vector index |
-| `indexName` | `string` | Returns the name of the created vector index |
-| `knowledgeBaseId` | `string` | Returns the ID of the created knowledge base |
-| `knowledgeBaseArn` | `string` | Returns the ARN of the created knowledge base |
-
-## Default Settings
-
-Out of the box implementation of the constructs without any override will set the following defaults:
-
-### Amazon S3 Vector Bucket
-
-- Server-side encryption with Amazon S3 managed keys (SSE-S3) using AES256
-- Least privilege IAM permissions for vector operations
-- Custom resource handlers for bucket lifecycle management
-
-### Vector Index
-
-- Support for float32 data type vectors
-- Configurable dimensions (1-4096)
-- Choice of euclidean or cosine distance metrics
-- Optional metadata configuration for enhanced search capabilities
-
-### Amazon Bedrock Knowledge Base
-
-- Integration with S3 Vectors as the vector store
-- Configurable embedding models
-- IAM role with least privilege permissions
-- Support for various embedding data types and dimensions
 
 ## Architecture
 
-![Architecture Diagram](./architecture.png)
+```mermaid
+graph TD
+    subgraph "CDK Application"
+        A[Bucket Construct] --> B(S3 Vector Bucket)
+        C[Index Construct] --> D(S3 Vector Index)
+        E[KnowledgeBase Construct] --> F(Bedrock Knowledge Base)
+    end
+
+    subgraph "AWS Cloud"
+        A -- defines --> G{Lambda}
+        C -- defines --> G
+        E -- defines --> G
+        G -- uses --> H{S3 Vectors}
+        G -- uses --> I{Bedrock}
+        H --> J(Embedding Model)
+    end
+
+    G -- creates --> B
+    G -- creates --> D
+    G -- creates --> F
+```
 
 ## License
 
