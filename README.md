@@ -63,10 +63,6 @@ For complete, deployable examples in all supported languages, see the [examples 
 ## API Reference
 The API reference can be found [here](./API.md).
 
-## API Reference
-The API reference can be found [here](./API.md).
-
-
 ## Architecture
 
 ```mermaid
